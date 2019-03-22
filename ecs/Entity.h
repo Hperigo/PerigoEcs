@@ -37,11 +37,7 @@ namespace ecs{
             mNumOfEntities += 1;
         }
 
-        virtual ~Entity(){
-            if(isAlive()){
-                markRefresh();
-            }
-        }
+        virtual ~Entity(){}
 
         EntityRef duplicate();
         

@@ -22,7 +22,6 @@ namespace  ecs{
 
 class Manager {
 
-
 public:
     Manager(){
     
@@ -36,39 +35,40 @@ public:
     }
 
     EntityRef createEntity(){
-        
-        EntityRef e = std::make_shared<Entity>();
+        Entity* e = new ecs::Entity();
+
         e->mManager = this;
-        e->mFactory = std::make_shared< internal::EntityInfoBase >();
+        // e->mFactory = std::make_shared< internal::EntityInfoBase >();
         
         mEntityPool.addEntityToPool(e);
         mEntityPool.resizeComponentVector();
-
+    
         e->setup();
-        
+
+
         if( e->onLateSetup ){
             e->onLateSetup();
         }
         
-        return e;
+        return std::shared_ptr<ecs::Entity >( e , Manager::deleteEntity );
     }
     
     template<typename T, typename... Args>
     std::shared_ptr<T> createEntity(Args&&... args){
 
-        std::shared_ptr<T> e = std::make_shared<T>( std::forward<Args>(args)...  );
-        e->mManager = this;
-        e->mFactory = std::make_shared< EntityHelper<T> >();
+        // std::shared_ptr<T> e = std::make_shared<T>( std::forward<Args>(args)...  );
+        // e->mManager = this;
+        // e->mFactory = std::make_shared< EntityHelper<T> >();
         
-        mEntityPool.addEntityToPool(e);
+        // mEntityPool.addEntityToPool(e);
 
-        e->setup();
+        // e->setup();
         
-        if( e->onLateSetup ){
-            e->onLateSetup();
-        }
+        // if( e->onLateSetup ){
+        //     e->onLateSetup();
+        // }
         
-        return e;
+        // return e;
     }
 
     template<typename T, typename... TArgs>
@@ -177,7 +177,7 @@ public:
             
             bool b = ( e->getComponentBitset() | bitsetMask  ) == e->getComponentBitset(); // check if entity has all the bits in the bitset mask
             if( b ){
-                 entities.push_back( e );
+                 entities.push_back( std::shared_ptr<Entity>(e, deleteEntity) );
              }
             
          }
@@ -186,31 +186,31 @@ public:
     };
     
     EntityRef copyEntity( const Entity* iEntity ){
-        EntityRef e;
-        iEntity->getFactory()->copyInto( iEntity, e );
+        // EntityRef e;
+        // iEntity->getFactory()->copyInto( iEntity, e );
         
-        mEntityPool.addEntityToPool(e);
+        // mEntityPool.addEntityToPool(e);
         
-        for(size_t i = 0; i < e->mComponentBitset.size(); ++i){
+        // for(size_t i = 0; i < e->mComponentBitset.size(); ++i){
             
-            if(  e->mComponentBitset[i] == true ){
+        //     if(  e->mComponentBitset[i] == true ){
                 
-                auto sourceComponent = iEntity->getComponentFromManager( i );
-                assert( sourceComponent != nullptr );
+        //         auto sourceComponent = iEntity->getComponentFromManager( i );
+        //         assert( sourceComponent != nullptr );
                 
-                ComponentRef targetComponent;
+        //         ComponentRef targetComponent;
                 
-                sourceComponent->getFactory()->copyInto( sourceComponent, targetComponent );
-                targetComponent->mEntity = e.get();
+        //         sourceComponent->getFactory()->copyInto( sourceComponent, targetComponent );
+        //         targetComponent->mEntity = e.get();
                 
-                addComponent( e->getId(), i, targetComponent );
+        //         addComponent( e->getId(), i, targetComponent );
 
-            }
-        }
+        //     }
+        // }
         
        // printCheck();
         
-        return e;
+        // return e;
     }
     
     EntityRef copyEntity( const EntityRef& iEntity ){
@@ -226,7 +226,8 @@ public:
             if( e == nullptr ){
                 continue;
             }
-            output.push_back(e);
+
+            output.push_back( std::shared_ptr<ecs::Entity>(e, deleteEntity) );
         }
 
         return output;
@@ -244,7 +245,7 @@ public:
         EntityPool duplicate();
         void setPool(const EntityPool& otherPool );
         
-        void addEntityToPool( EntityRef e ) {
+        void addEntityToPool( Entity* e ) {
             // grabs an empty ( available id) from pool, if that's not available create a new space
             uint64_t eId = -1;
             if( fetchId( &eId ) ){
@@ -258,7 +259,7 @@ public:
                 mEntities.emplace_back(e);
             }
         }
-        
+
         void resizeEntityBuffer(){
             
             // resize entity vector and later the components vector
@@ -278,6 +279,8 @@ public:
                 mComponents[i].resize( mEntities.size() );
             }
         }
+
+
         
         uint32_t getNumOfActiveEntities(){
             uint32_t num = 0;
@@ -291,9 +294,7 @@ public:
         
         
         void cleanup(){
-            
-            
-            
+
             uint64_t index;
             
             for( auto e = mEntities.begin(); e != mEntities.end(); ){
@@ -307,7 +308,7 @@ public:
             }
         }
         
-        std::vector<EntityRef> mEntities;
+        std::vector<Entity*> mEntities;
         std::array< std::vector<ComponentRef>, MaxComponents> mComponents;
         
         std::queue<uint64_t> idPool;
@@ -335,6 +336,12 @@ protected:
     // TODO: make this the main array, not a copy, by using `new` and `delete`
 
     friend class Entity;
+
+    static void deleteEntity( ecs::Entity* e ){
+        cout << "setting entity to false- : " << e->getId() << endl;
+        e->mIsAlive = false;
+        e->markRefresh();
+    }
 };
 }
 #endif //LEKSAPP_MANAGER_H
