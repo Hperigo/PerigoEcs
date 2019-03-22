@@ -1,12 +1,12 @@
 # Entity component system for creative coding apps
 
-##build tests:
+### build tests:
 
 1. `mkdir build && cd build`
 2. `cmake ..`
 3. `make && ./tests/tests`
 
-###Todo: 
+### Todo: 
     1. add aditional tests
         * child classes of ecs::Entity
         * Transforms 
