@@ -6,7 +6,6 @@
 2. `cmake ..`
 3. `make && ./tests/tests`
 
-
 ###Todo: 
     1. add aditional tests
         * child classes of ecs::Entity
