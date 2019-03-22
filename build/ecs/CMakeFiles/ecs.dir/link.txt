@@ -1,2 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc libecs.a  CMakeFiles/ecs.dir/Entity.cpp.o CMakeFiles/ecs.dir/Manager.cpp.o CMakeFiles/ecs.dir/System.cpp.o
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib libecs.a
