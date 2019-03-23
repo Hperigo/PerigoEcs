@@ -21,14 +21,7 @@ namespace ecs{
     class Manager;
     class System;
 
-    using EntityRef = std::shared_ptr<Entity>;
-
-    namespace internal{
-        struct EntityInfoBase{
-            virtual void copyInto(const Entity* source, EntityRef& target);
-        };
-    }
-    
+    using EntityRef = std::shared_ptr<Entity>;    
     class Entity : public std::enable_shared_from_this<Entity> {
 
     public:
@@ -74,12 +67,7 @@ namespace ecs{
             std::shared_ptr<WrapperComponent<T>> rawComponent( new WrapperComponent<T>( T() ) );
             
             auto cId = getComponentTypeID<WrapperComponent<T>>();
-            
-            auto rawHelper = std::make_shared< ComponentFactoryTemplate< WrapperComponent<T> > >();
-            
-            rawHelper->owner = rawComponent.get();
-            rawComponent->mFactory = rawHelper;
-            
+
             addComponentToManager(cId, rawComponent);
             return getComponent< T >();
             
@@ -93,19 +81,12 @@ namespace ecs{
             assert(!hasComponent<T>());
             
             std::shared_ptr<T> rawComponent( new T() );
-            
             auto cId = getComponentTypeID<T>();
-            
-            auto rawHelper = std::make_shared< ComponentFactoryTemplate<T> >();
-            rawHelper->owner = rawComponent.get();
-            rawComponent->mFactory = rawHelper;
-            
             addComponentToManager(cId, rawComponent);
-            
+
             return  rawComponent.get();
             
         }
-        
         
         template <class T, typename... TArgs,
         typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
@@ -113,10 +94,6 @@ namespace ecs{
             
             std::shared_ptr<WrapperComponent<T>> rawComponent( new WrapperComponent<T>( std::forward<TArgs>(_Args)... ) );
             auto cId = getComponentTypeID<WrapperComponent<T>>();
-            auto rawHelper = std::make_shared< ComponentFactoryTemplate< WrapperComponent<T> > >();
-            rawHelper->owner = rawComponent.get();
-            rawComponent->mFactory = rawHelper;
-            
             addComponentToManager(cId, rawComponent);
             
             return  ( T* )rawComponent.get();
@@ -129,20 +106,15 @@ namespace ecs{
             std::shared_ptr<T> rawComponent( new T(std::forward<TArgs>(_Args)... ));
             
             auto cId = getComponentTypeID<T>();
-            
-            auto rawHelper = std::make_shared< ComponentFactoryTemplate<T> >();
-            rawHelper->owner = rawComponent.get();
-            rawComponent->mFactory = rawHelper;
-            
             addComponentToManager(cId, rawComponent);
             
             return  rawComponent.get();
             
         }
      
-        void addComponent( ComponentRef& rawComponent ){
-            addComponentToManager(rawComponent->getFactory()->_id, rawComponent);
-        }
+        // void addComponent( ComponentRef& rawComponent ){
+        //     addComponentToManager(rawComponent->getFactory()->_id, rawComponent);
+        // }
         
         template<typename T>
         void removeComponent(){
@@ -158,6 +130,7 @@ namespace ecs{
         T* getComponent(){
             
             assert(hasComponent< WrapperComponent<T> >());
+
             Component* comp =   getComponentFromManager( getComponentTypeID< WrapperComponent<T> >() );
             WrapperComponent<T>* wrapper = static_cast< WrapperComponent<T>* >(  comp );
             
@@ -173,7 +146,6 @@ namespace ecs{
                 return (T*)getComponentFromManager( getComponentTypeID<T>() );
             else
                 return nullptr;
-            
         }
         
         inline std::bitset<MaxComponents> getComponentBitset(){ return mComponentBitset; }
@@ -195,15 +167,7 @@ namespace ecs{
         }
         
         Manager* getManager() { return mManager; }
-        
-        std::shared_ptr<internal::EntityInfoBase> getFactory() const { return mFactory; };
 
-        void setActive( bool active = true ){
-            mIsActive = active;
-        }
-        
-        bool isActive() const { return mIsActive; }
-        
         std::function<void()> onDestroy;
         
     protected:
@@ -211,8 +175,6 @@ namespace ecs{
         ecs::Component* getComponentFromManager(ComponentID cId) const;
         void addComponentToManager( ComponentID cId,  const ComponentRef& component );
         void markRefresh();
-        
-        std::shared_ptr<internal::EntityInfoBase> mFactory;
 
         Manager* mManager;
         bool mIsAlive{ true };
@@ -227,21 +189,9 @@ namespace ecs{
         
         friend class Manager;
         
-      //use this to initialize components in the entity constructor
+        //use this to initialize components in the entity constructor
         std::function<void()> onLateSetup;
-    };
-    
-    template<class T>
-    struct EntityHelper :  public internal::EntityInfoBase{
-        
-        void copyInto( const Entity* source, EntityRef& target) override{
-            auto t = (T*)( source );
-            std::shared_ptr<T> newOne = std::make_shared<T>( *t );
-            target = newOne;
-        }
-    
-    };
-    
+    };    
 }
 
 #endif //LEKSAPP_ENTITY_H

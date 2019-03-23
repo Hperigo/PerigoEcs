@@ -281,8 +281,6 @@ protected:
     bool needsRefresh{false};
     bool isManagerInitialized = false;
 
-    
-
     // setup entity after it's creation
     void setupEntity(const EntityRef& e ){
 
@@ -297,16 +295,20 @@ protected:
     }
     static void entityDeleter( ecs::Entity* e ){
 
-        e->markRefresh();
         if( e->onDestroy ){
             e->onDestroy();
         }
+
+        e->markRefresh();
         auto& pool = e->getManager()->mEntityPool;
         auto id = e->getId();
         pool.idPool.push(id);
-        pool.mEntities[id] = std::weak_ptr<Entity>();
-        delete ( e );
 
+        pool.mEntities[id] = std::weak_ptr<Entity>();
+
+        
+
+        delete ( e );
     }
 
     friend class Entity;

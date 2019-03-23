@@ -31,16 +31,7 @@ namespace ecs{
         inline ComponentID getUniqueComponentID() noexcept {
             return lastID++;
         }
-    
-        struct ComponentFactoryInterface : public std::enable_shared_from_this<ComponentFactoryInterface> {
-            virtual void copyInto(const Component* source, ComponentRef& target){};
-            virtual void load(void* archiver){};
-            virtual void save(void* archiver){};
-            virtual ComponentRef create() = 0;
             
-            ComponentID _id;
-        };
-        
         template <typename T>
         inline ComponentID getComponentTypeID() noexcept {
             
@@ -63,15 +54,8 @@ namespace ecs{
         Entity* getEntity() const { return mEntity; }
         Manager* getManager(){ return mManager; }
 
-
-        std::shared_ptr<internal::ComponentFactoryInterface> getFactory() const {
-            return mFactory;
-        }
-        void setFactory(const std::shared_ptr<internal::ComponentFactoryInterface>& iFactory ){ mFactory = iFactory; }
     protected:
-    
-        std::shared_ptr<internal::ComponentFactoryInterface> mFactory;
-        
+            
         Entity* mEntity;
         uint64_t mEntityId;
         Manager* mManager;
@@ -92,6 +76,10 @@ namespace ecs{
         WrapperComponent(const T& input ) : object(input) {
             
         }
+
+        T& getRef() { return object; }
+
+        //TODO: make private
         T object;
     };
     
@@ -107,58 +95,7 @@ namespace ecs{
     inline ComponentID getComponentTypeID(){
             return internal::getComponentTypeID<T>();
     }
-    
-    
-    // we need to store T as a class child of ComponentFactoryInterface, so it can be stored into the component
-    template<class T>
-    struct ComponentFactory :  public internal::ComponentFactoryInterface{
-        
-            ComponentFactory() {
-                owner = &object;
-                _id = getComponentTypeID<T>();
-            }
-        
-        
-        void copyInto(const Component* source, ComponentRef& target) override{
-            T* sourceObj = (T*)source;
-            
-            target.reset();
-            target = std::make_shared<T>( *((T*)source) );
-            target->setFactory( shared_from_this() ) ;
-        }
-            
-        
-        ComponentRef create() override;
-            
-            
-        void save(void* archiver) override{ }
-            
-        void load(void* archiver) override { }
-        
-        T* owner;
-        static T object;
-    };
-    
-    template<typename T>
-    T ecs::ComponentFactory<T>::object = T();
 
-    
-    template<class T>
-    struct ComponentFactoryTemplate : public ComponentFactory<T>{
-
-    };
-    
-    template<class T>
-    ComponentRef ComponentFactory<T>::create(){
-        auto t = std::make_shared<T>();
-        
-        auto helper = std::make_shared<ComponentFactoryTemplate<T> >();
-        helper->owner = t.get();
-        t->setFactory(helper);
-        
-        return t;
-    }
-    
 }//end of namespace
 
 

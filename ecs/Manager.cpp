@@ -125,7 +125,6 @@ void Manager::update(){
     refresh();
     
     for(auto& sys  : mSystems){
-        
         if( sys->updatable ){
             sys->update();
         }
@@ -134,13 +133,12 @@ void Manager::update(){
 
 
 void Manager::refresh(){
-    
+
     if( !needsRefresh ){
         return;
     }
 
     for( std::size_t i = 0; i < mEntityPool.mComponents.size(); ++i ){
-        
         auto& componentVector(mEntityPool.mComponents[i]);
         
         // erase components
@@ -150,7 +148,6 @@ void Manager::refresh(){
             if( (*cIt) == nullptr ){
                 continue;
             }
-
 
             auto e = mEntityPool.mEntities[j].lock();
             
