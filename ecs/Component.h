@@ -73,6 +73,7 @@ namespace ecs{
         std::shared_ptr<internal::ComponentFactoryInterface> mFactory;
         
         Entity* mEntity;
+        uint64_t mEntityId;
         Manager* mManager;
     
         std::size_t mComponentId;

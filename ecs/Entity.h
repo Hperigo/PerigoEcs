@@ -37,7 +37,7 @@ namespace ecs{
             mNumOfEntities += 1;
         }
 
-        virtual ~Entity(){}
+        virtual ~Entity(){ }
 
         EntityRef duplicate();
         
@@ -60,9 +60,12 @@ namespace ecs{
         
         template < typename T>
         bool hasComponent() const{
-            return mComponentBitset[ getComponentTypeID<T>() ];
+            return  hasComponentBitset( getComponentTypeID<T>() ) ;
         }
 
+        bool hasComponentBitset( const size_t i ) const {
+             return  mComponentBitset[ i ];
+        }
         
         template <class T,
         typename std::enable_if< !std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
@@ -143,13 +146,9 @@ namespace ecs{
         
         template<typename T>
         void removeComponent(){
-
             ComponentID componentTypeID;
-            
-            // we dont need a specialized function for wrapper components because getComponentTypeID already does that
             componentTypeID = getComponentTypeID<T>();
             mComponentBitset.set(componentTypeID, 0);
-            
             markRefresh();
         }
 
@@ -178,14 +177,12 @@ namespace ecs{
         }
         
         inline std::bitset<MaxComponents> getComponentBitset(){ return mComponentBitset; }
-        
-        
-        //TODO: use bitset
+
+
         inline std::vector< Component* > getComponents(){
             std::vector< Component* > components;
             
             for( int i = 0; i < internal::lastID + 1; i++ ){
-                
                 if( mComponentBitset[i] == true ){
                     auto c = getComponentFromManager( i );
                     assert(c != nullptr); // this components should not be null, if so, why is the bitset true?

@@ -21,89 +21,89 @@ bool Manager::EntityPool::fetchId(uint64_t* outputID){
     return false;
 }
 
-Manager::EntityPool Manager::EntityPool::duplicate(){
+// Manager::EntityPool Manager::EntityPool::duplicate(){
     
-    // Manager::EntityPool returnPool;
+//     // Manager::EntityPool returnPool;
     
-    //     cout << "copied!" << endl;
-    //     returnPool.mEntities.reserve(mEntities.size());
+//     //     cout << "copied!" << endl;
+//     //     returnPool.mEntities.reserve(mEntities.size());
         
-    //     for( auto& entity : mEntities){
+//     //     for( auto& entity : mEntities){
             
-    //         EntityRef e;
-    //         entity->getFactory()->copyInto(entity.get(), e);
+//     //         EntityRef e;
+//     //         entity->getFactory()->copyInto(entity.get(), e);
             
-    //         returnPool.mEntities.push_back( e );
-    //         cout << "---------" << endl;
-    //         cout << "e : " << e->getId() << endl;
+//     //         returnPool.mEntities.push_back( e );
+//     //         cout << "---------" << endl;
+//     //         cout << "e : " << e->getId() << endl;
             
-    //         for(size_t i = 0; i < e->mComponentBitset.size(); ++i){
+//     //         for(size_t i = 0; i < e->mComponentBitset.size(); ++i){
                 
-    //             if(  e->mComponentBitset[i] == true ){
+//     //             if(  e->mComponentBitset[i] == true ){
                     
-    //                 cout << "c : " << i << endl;
+//     //                 cout << "c : " << i << endl;
                     
-    //                 auto sourceComponent = mComponents[i][entity->getId()].get();
-    //                 ComponentRef targetComponent;
-    //                 auto factory = sourceComponent->getFactory();
+//     //                 auto sourceComponent = mComponents[i][entity->getId()].get();
+//     //                 ComponentRef targetComponent;
+//     //                 auto factory = sourceComponent->getFactory();
                     
-    //                 factory->copyInto( sourceComponent, targetComponent );
-    //                 targetComponent->mEntity = e.get();
+//     //                 factory->copyInto( sourceComponent, targetComponent );
+//     //                 targetComponent->mEntity = e.get();
                     
-    //                 auto entityId = e->getId();
-    //                 auto id = i;
+//     //                 auto entityId = e->getId();
+//     //                 auto id = i;
                     
-    //                 // Todo add addComponent function to entityPool ----
-    //                 auto& componentVector = returnPool.mComponents[id];
+//     //                 // Todo add addComponent function to entityPool ----
+//     //                 auto& componentVector = returnPool.mComponents[id];
                     
-    //                 if( entityId >= componentVector.size() ){
-    //                     returnPool.resizeComponentVector();
-    //                     componentVector[entityId] = targetComponent;
-    //                 }else{
-    //                     componentVector[entityId] = targetComponent;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return returnPool;
-}
+//     //                 if( entityId >= componentVector.size() ){
+//     //                     returnPool.resizeComponentVector();
+//     //                     componentVector[entityId] = targetComponent;
+//     //                 }else{
+//     //                     componentVector[entityId] = targetComponent;
+//     //                 }
+//     //             }
+//     //         }
+//     //     }
+//     //     return returnPool;
+// }
 
-void Manager::EntityPool::setPool(const EntityPool &otherPool){
-//         for( int i = 0; i < otherPool.mComponents.size(); i++ ){
+// void Manager::EntityPool::setPool(const EntityPool &otherPool){
+// //         for( int i = 0; i < otherPool.mComponents.size(); i++ ){
             
-//             mComponents[i].clear();
+// //             mComponents[i].clear();
             
-//             for( int j = 0; j < otherPool.mComponents[i].size(); j++ ){
+// //             for( int j = 0; j < otherPool.mComponents[i].size(); j++ ){
                 
-//                 cout << "---j: " << j << endl;
+// //                 cout << "---j: " << j << endl;
 
-//                 ComponentRef sourceComponent = otherPool.mComponents[i][j];
-//                 ComponentRef targetComponent;
+// //                 ComponentRef sourceComponent = otherPool.mComponents[i][j];
+// //                 ComponentRef targetComponent;
                 
-//                 sourceComponent->getFactory()->copyInto( sourceComponent.get(), targetComponent );
-// //        /        mEntities[j]->mComponentArray[i] = otherPool.mComponents[i][j].get();
+// //                 sourceComponent->getFactory()->copyInto( sourceComponent.get(), targetComponent );
+// // //        /        mEntities[j]->mComponentArray[i] = otherPool.mComponents[i][j].get();
                 
-//                 mComponents[i].push_back(targetComponent);
+// //                 mComponents[i].push_back(targetComponent);
                 
-//                 cout << " --- " << endl;
+// //                 cout << " --- " << endl;
                 
-//             }
-//         }
+// //             }
+// //         }
     
 
-    // TODO: maybe we also need to deep copy the entities here?
-    // for( auto& sourceEntity : otherPool.mEntities ){
+//     // TODO: maybe we also need to deep copy the entities here?
+//     // for( auto& sourceEntity : otherPool.mEntities ){
         
-    //     EntityRef e;
-    //     sourceEntity->getFactory()->copyInto(sourceEntity.get(), e);
-    //     for( auto& c : mComponents[e->getId()] ){
-    //         if( c != nullptr  ){
-    //             c->mEntity = e.get();
-    //         }
-    //         mEntities[e->getId()] = e;
-    //     }
-    // }
-}
+//     //     EntityRef e;
+//     //     sourceEntity->getFactory()->copyInto(sourceEntity.get(), e);
+//     //     for( auto& c : mComponents[e->getId()] ){
+//     //         if( c != nullptr  ){
+//     //             c->mEntity = e.get();
+//     //         }
+//     //         mEntities[e->getId()] = e;
+//     //     }
+//     // }
+// }
 
 
 void Manager::setup(){
@@ -138,7 +138,7 @@ void Manager::refresh(){
     if( !needsRefresh ){
         return;
     }
-    
+
     for( std::size_t i = 0; i < mEntityPool.mComponents.size(); ++i ){
         
         auto& componentVector(mEntityPool.mComponents[i]);
@@ -150,11 +150,11 @@ void Manager::refresh(){
             if( (*cIt) == nullptr ){
                 continue;
             }
+
+
+            auto e = mEntityPool.mEntities[j].lock();
             
-            auto e = (*cIt)->getEntity();
-            assert( e != nullptr );
-            
-            if( !e->isAlive() ){
+            if( e == nullptr || ! e->hasComponentBitset(i) ){
                 (*cIt)->onDestroy();
                 (*cIt).reset();
             }
@@ -170,33 +170,11 @@ void Manager::refresh(){
         }
     } // end of entity loop
     
-    
-    // erase dead Entities
-    for( auto eIt = mEntityPool.mEntities.begin(); eIt != mEntityPool.mEntities.end(); ++eIt){
-        
-        if( *eIt == nullptr ){
-            continue;
-        }
-        
-        if( ! (*eIt)->isAlive() )
-        {   
-            if( (*eIt)->onDestroy ){
-                (*eIt)->onDestroy();
-            }
-            auto id = (*eIt)->getId();
-            mEntityPool.idPool.push(id);
-            mEntityPool.mEntities[id] = nullptr;
-            delete (*eIt);
-        }
-    }
-    
     needsRefresh = false;
-    
 }
 
 void Manager::draw(){
-    
-    
+
     for(auto& sys  : mSystems){
         if( sys->drawable ){
             sys->draw();
@@ -210,7 +188,7 @@ void Manager::printCheck(){
     cout << "enti,";
     for( int i = 0; i < mEntityPool.mEntities.size(); i++){
 
-        if( mEntityPool.mEntities[i] == nullptr ){
+        if( mEntityPool.mEntities[i].expired() ){
             cout << "*" << "," ;
         }else{
             cout << i << ",";
