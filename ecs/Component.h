@@ -8,6 +8,10 @@
 #ifndef ECSSAPP_COMPONENT_H
 #define ECSSAPP_COMPONENT_H
 
+#ifndef ECS_MAX_COMPONENTS
+    #define ECS_MAX_COMPONENTS 100
+#endif
+
 namespace ecs{
 
     // forward decls...
@@ -15,13 +19,13 @@ namespace ecs{
 
     class Entity;
     using EntityRef = std::shared_ptr<Entity>;
-    using EntityHandle = std::weak_ptr<Entity>;
     class Manager;
 
     using ComponentID = std::size_t;
+    using EntityID = std::size_t;
+    
     using ComponentRef = std::shared_ptr<Component>;
-
-    constexpr std::size_t MaxComponents{100};
+    constexpr std::size_t MaxComponents{ECS_MAX_COMPONENTS};
     using ComponentBitset = std::bitset<MaxComponents>;
     
     namespace internal{

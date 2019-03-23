@@ -134,37 +134,43 @@ void Manager::update(){
 
 void Manager::refresh(){
 
-    if( !needsRefresh ){
-        return;
-    }
+    /* 
 
-    for( std::size_t i = 0; i < mEntityPool.mComponents.size(); ++i ){
-        auto& componentVector(mEntityPool.mComponents[i]);
+    entities id| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | ...> grows at runtime
+    
+    ComponentA | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | ...>
+    ComponentB | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1 | ...>
+    ComponentC | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | ...>
+    .
+    .
+    ... Goes up to ecs::MaxComponents
+    */
+
+    for( ComponentID componentTypeId = 0; componentTypeId < mEntityPool.mComponents.size(); ++componentTypeId ){
+        auto& componentVector(mEntityPool.mComponents[componentTypeId]);
         
-        // erase components
-        int j = 0;
-        for( auto cIt = componentVector.begin(); cIt != componentVector.end(); ++cIt) {
-            
-            if( (*cIt) == nullptr ){
-                continue;
-            }
+        for( EntityID entityId = 0; entityId < mEntityPool.mEntities.size(); ++entityId ){
+                
+                auto& component = componentVector[entityId];
 
-            auto e = mEntityPool.mEntities[j].lock();
-            
-            if( e == nullptr || ! e->hasComponentBitset(i) ){
-                (*cIt)->onDestroy();
-                (*cIt).reset();
-            }
-            
-            j++;
+                if( component != nullptr ){
+
+                    auto e = mEntityPool.mEntities[entityId].lock();
+                    if( e == nullptr || ! e->hasComponentBitset(componentTypeId) ){
+                        component->onDestroy();
+                        component.reset();
+
+                    }
+                }
         }
-        
-        mComponentsByType[i].clear();
+
+        mComponentsByType[componentTypeId].clear();
         for(auto cp :  componentVector){
             if(cp != nullptr){
-                mComponentsByType[i].push_back( cp.get() );
+                mComponentsByType[componentTypeId].push_back( cp.get() );
             }
         }
+
     } // end of entity loop
     
     needsRefresh = false;

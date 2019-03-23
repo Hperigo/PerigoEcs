@@ -142,7 +142,7 @@ public:
             refresh();
         }
         
-        auto _id = getComponentTypeID<T>();
+        auto _id = getComponentTypeID< WrapperComponent<T> >();
         return  (std::vector< WrapperComponent<T>* >&) mComponentsByType[_id];
     }
     

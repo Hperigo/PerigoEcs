@@ -15,7 +15,7 @@ struct CustomEntity : public ecs::Entity{
 
   ~CustomEntity(){ 
         cout << "CustomEntity deconstructor!" << endl;
-    }    
+    }
 };
 
 struct Dummy : public ecs::Component {
@@ -28,7 +28,6 @@ TEST_CASE( "1: Manager tests" ) {
     
 
     SECTION( "resizing bigger changes size and capacity" ) {
-
         {
             ecs::EntityRef mEntity = mManager->createEntity();
             mEntity->setName("test");
@@ -47,9 +46,8 @@ TEST_CASE( "1: Manager tests" ) {
         //entity lost it's scope, so we can't have anything else in the manager
         REQUIRE( mManager->getEntities().size() == 0 );
 
-        //but we should have something in the poo
-        cout << "idPool: " <<  mManager->mEntityPool.idPool.size() << endl;
-        // REQUIRE( mManager->mEntityPool.idPool.size() == 1 );
+        //but we should have some available ID in the pool
+        REQUIRE( mManager->mEntityPool.idPool.size() == 1 );
     } 
 
 
@@ -100,6 +98,7 @@ TEST_CASE( "1: Manager tests" ) {
                 mEntity->addComponent<Dummy>();
 
                 REQUIRE( mEntity->hasComponent<Dummy>() == true );
+                REQUIRE( mManager->getEntitiesWithComponents<Dummy>().size() == 1 );
                 
                 mEntity->removeComponent<Dummy>();
 
@@ -108,9 +107,34 @@ TEST_CASE( "1: Manager tests" ) {
                 {
                     auto dummies = mManager->getComponentsArray<Dummy>();
                     REQUIRE( dummies.size() == 0 );
+                    
+                    REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
                 }
         }
 
+
+    SECTION( "Wrapper components" ){
+
+        {           
+            ecs::EntityRef mEntity = mManager->createEntity<CustomEntity>();
+            mEntity->addComponent<std::string>( "string!" );
+
+            REQUIRE( mEntity->hasComponent<std::string>() == true );
+
+            REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 1 );
+
+            mEntity->removeComponent<std::string>();
+            REQUIRE( mEntity->hasComponent<std::string>() == false ); 
+        }
+
+        {
+            auto strings = mManager->getComponentsArray<std::string>();
+            REQUIRE( strings.size() == 0 );
+
+            REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
+        }
+    
+    }
 }
 
 

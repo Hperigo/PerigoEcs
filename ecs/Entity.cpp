@@ -36,3 +36,4 @@ ecs::Component* Entity::getComponentFromManager(ComponentID cId) const {
 void Entity::markRefresh(){
     mManager->needsRefresh = true;
 }
+

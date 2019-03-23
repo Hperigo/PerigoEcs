@@ -111,19 +111,35 @@ namespace ecs{
             return  rawComponent.get();
             
         }
-     
-        // void addComponent( ComponentRef& rawComponent ){
-        //     addComponentToManager(rawComponent->getFactory()->_id, rawComponent);
-        // }
+    
         
-        template<typename T>
+        
+        
+        // normal component
+        template <class T,
+        typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
         void removeComponent(){
-            ComponentID componentTypeID;
-            componentTypeID = getComponentTypeID<T>();
+
+            auto componentTypeID = getComponentTypeID<T>();            
+            removeComponentWithId(componentTypeID);
+
+        }
+
+        // wrapper component
+        template <class T,
+        typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
+        void removeComponent(){
+
+            auto componentTypeID = getComponentTypeID< WrapperComponent<T>>();
+            std::cout << "removed from wrapper: " << componentTypeID << std::endl;
+            removeComponentWithId(componentTypeID);
+        }
+
+        // actually remove the component
+        void removeComponentWithId( const ComponentID& componentTypeID ){
             mComponentBitset.set(componentTypeID, 0);
             markRefresh();
         }
-
         
         template <class T,
         typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
@@ -178,7 +194,6 @@ namespace ecs{
 
         Manager* mManager;
         bool mIsAlive{ true };
-        bool mIsActive{ true };
         
         std::bitset<MaxComponents> mComponentBitset;
         
