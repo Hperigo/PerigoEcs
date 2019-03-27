@@ -9,8 +9,6 @@
 
 using namespace ecs;
 
-
-
 unsigned int Entity::mNumOfEntities = 0;
 
 void Entity::addComponentToManager( ComponentID cId, const ComponentRef& component){
@@ -37,9 +35,8 @@ void Entity::markRefresh(){
     mManager->needsRefresh = true;
 }
 
-
-
-void Entity::clone(){
+EntityRef Entity::clone(){
     //NOT IMPLEMENTED
     assert(false);
+    return nullptr;
 }
