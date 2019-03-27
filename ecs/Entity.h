@@ -206,7 +206,32 @@ namespace ecs{
         
         //use this to initialize components in the entity constructor
         std::function<void()> onLateSetup;
-    };    
+    };
+    
+    
+    template <typename T>
+    class ScopedEntity {
+    public:
+        ScopedEntity( EntityRef e ) : entity( e )
+        { }
+        
+        ~ScopedEntity(){
+            std::cout << "scoped entity out" << std::endl;
+            entity->destroy();
+        }
+        
+        T* operator ->(){
+            return (T*)( entity.get() );
+        }
+        
+        EntityRef getPtr(){
+            return entity;
+        }
+        
+    private:
+        EntityRef entity;
+    };
+    
 }
 
 #endif //LEKSAPP_ENTITY_H

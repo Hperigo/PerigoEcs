@@ -36,23 +36,28 @@ public:
 
     EntityRef createEntity(){
         Entity* e = new ecs::Entity();
-        auto sharedEntity = std::shared_ptr<ecs::Entity >( e , Manager::entityDeleter );
+        auto sharedEntity = std::shared_ptr<ecs::Entity >( e );
         setupEntity(sharedEntity);
-
         return sharedEntity;
     }
-
     
+    
+    ScopedEntity<Entity> createScopedEntity() {
+        
+        return ScopedEntity<Entity>(createEntity());
+        
+    }
+
     template<typename T, typename... Args>
     std::shared_ptr<T> createEntity(Args&&... args){
-
+        
         T* e = new T(std::forward<Args>(args)... );
-        std::shared_ptr<T> sharedEntity = std::shared_ptr<T>( e , Manager::entityDeleter );
-
+        std::shared_ptr<T> sharedEntity = std::shared_ptr<T>( e );
+        
         setupEntity(sharedEntity);
         return sharedEntity;
     }
-
+    
 
 
     template<typename T, typename... TArgs>
@@ -155,7 +160,7 @@ public:
         std::vector<std::shared_ptr<Entity>> entities;
         for( auto &e : mEntityPool.mEntities ){
             
-            if(auto shared = e.lock() ){
+            if(auto shared = e ){
                 bool b = ( shared->getComponentBitset() | bitsetMask  ) == shared->getComponentBitset(); // check if entity has all the bits in the bitset mask
                 if( b ){
                     entities.push_back( shared );
@@ -177,7 +182,7 @@ public:
         std::vector<EntityRef> output;
         for( auto &e : mEntityPool.mEntities ){
             
-            if( auto shared = e.lock() ){
+            if( auto shared = e ){
                 output.push_back(shared);
             }
         }
@@ -195,21 +200,20 @@ public:
             
         }
         EntityPool duplicate();
+        
         void setPool(const EntityPool& otherPool );
         
-        void addEntityToPool( const std::weak_ptr<ecs::Entity>& e ) {
+        void addEntityToPool( const EntityRef& e ) {
             // grabs an empty ( available id) from pool, if that's not available create a new space
             uint64_t eId = -1;
             if( fetchId( &eId ) ){
-                
-                e.lock()->mEntityId = eId;
+                e->mEntityId = eId;
                 mEntities[eId] = e;
-
             }else{
 
-                e.lock()->mEntityId = mEntities.size();
+                e->mEntityId = mEntities.size();
                 mEntities.emplace_back(e);
-
+        
             }
         }
 
@@ -238,7 +242,7 @@ public:
         uint32_t getNumOfActiveEntities(){
             uint32_t num = 0;
             for(auto e : mEntities){
-                if(e.lock()){
+                if(e){
                     num++;
                 }
             }
@@ -262,7 +266,7 @@ public:
         }
 
 
-        std::vector<std::weak_ptr<Entity>> mEntities;
+        std::vector< EntityRef > mEntities;
         std::array< std::vector<ComponentRef>, MaxComponents> mComponents;
         
         std::queue<uint64_t> idPool;
@@ -285,15 +289,18 @@ protected:
     void setupEntity(const EntityRef& e ){
 
         e->mManager = this;
+        
         mEntityPool.addEntityToPool( e ); // add a weak_ptr to pool
         mEntityPool.resizeComponentVector();
+        
         e->setup();
+        
         if( e->onLateSetup ){
             e->onLateSetup();
         }
         
     }
-    static void entityDeleter( ecs::Entity* e ){
+    static void entityDeleter( ecs::EntityRef e ){
 
         if( e->onDestroy ){
             e->onDestroy();
@@ -304,11 +311,9 @@ protected:
         auto id = e->getId();
         pool.idPool.push(id);
 
-        pool.mEntities[id] = std::weak_ptr<Entity>();
-
+        pool.mEntities[id] = nullptr;
         
-
-        delete ( e );
+        e.reset();
     }
 
     friend class Entity;

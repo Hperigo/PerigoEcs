@@ -13,9 +13,10 @@ using namespace ecs;
 
 bool Manager::EntityPool::fetchId(uint64_t* outputID){
     
-    if( idPool.size() ){
+    if( idPool.size() > 0 ){
         *outputID = idPool.front();
         idPool.pop();
+        std::cout << "pop!" << std::endl;
         return true;
     }
     return false;
@@ -155,7 +156,7 @@ void Manager::refresh(){
 
                 if( component != nullptr ){
 
-                    auto e = mEntityPool.mEntities[entityId].lock();
+                    auto e = mEntityPool.mEntities[entityId];
                     if( e == nullptr || ! e->hasComponentBitset(componentTypeId) ){
                         component->onDestroy();
                         component.reset();
@@ -171,7 +172,21 @@ void Manager::refresh(){
             }
         }
 
-    } // end of entity loop
+    } // end of component loop
+    
+
+    //erase dead Entities
+    for( auto eIt = mEntityPool.mEntities.begin(); eIt != mEntityPool.mEntities.end(); ++eIt){
+        
+        if( *eIt == nullptr ){
+            continue;
+        }
+        
+        if( ! (*eIt)->isAlive() )
+        {
+            entityDeleter( (*eIt) );
+        }
+    }
     
     needsRefresh = false;
 }
@@ -191,7 +206,7 @@ void Manager::printCheck(){
     cout << "enti,";
     for( int i = 0; i < mEntityPool.mEntities.size(); i++){
 
-        if( mEntityPool.mEntities[i].expired() ){
+        if( mEntityPool.mEntities[i] == nullptr ){
             cout << "*" << "," ;
         }else{
             cout << i << ",";
