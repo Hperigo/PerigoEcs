@@ -12,7 +12,6 @@
         * Transforms 
         * Drawables
     
-    2. custom deleter in EntityRef
     3. threading? 
     4. make drawables and Iupdatables a single object
     5. measure performance
