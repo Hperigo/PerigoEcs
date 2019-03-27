@@ -16,7 +16,6 @@ bool Manager::EntityPool::fetchId(uint64_t* outputID){
     if( idPool.size() > 0 ){
         *outputID = idPool.front();
         idPool.pop();
-        std::cout << "pop!" << std::endl;
         return true;
     }
     return false;
@@ -153,14 +152,12 @@ void Manager::refresh(){
         for( EntityID entityId = 0; entityId < mEntityPool.mEntities.size(); ++entityId ){
                 
                 auto& component = componentVector[entityId];
-
                 if( component != nullptr ){
 
                     auto e = mEntityPool.mEntities[entityId];
-                    if( e == nullptr || ! e->hasComponentBitset(componentTypeId) ){
+                    if( e == nullptr || !e->hasComponentBitset(componentTypeId) || !e->isAlive() ){
                         component->onDestroy();
                         component.reset();
-
                     }
                 }
         }

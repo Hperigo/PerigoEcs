@@ -39,6 +39,8 @@ TEST_CASE( "1: Manager tests" ) {
             }
             mManager->update();
             REQUIRE( mManager->getEntities().size() == 1 );
+
+            mEntity->destroy();
         }
 
         mManager->update(); // actually delete the entity
@@ -48,7 +50,9 @@ TEST_CASE( "1: Manager tests" ) {
 
         //but we should have some available ID in the pool
         REQUIRE( mManager->mEntityPool.idPool.size() == 1 );
+
     } 
+
 
 
     SECTION( "Same but with custom Entity" ) {
@@ -61,6 +65,7 @@ TEST_CASE( "1: Manager tests" ) {
             }
             mManager->update();
             REQUIRE( mManager->getEntities().size() == 1 );
+            mEntity->destroy();
         }
 
         mManager->update(); // actually delete the entity
@@ -76,15 +81,17 @@ TEST_CASE( "1: Manager tests" ) {
         SECTION( "destroy component when entity is destroyed" ){
             {
                 ecs::EntityRef mEntity = mManager->createEntity();
-                mEntity->setName("test");
                 mEntity->addComponent<Dummy>();
 
                 auto dummies = mManager->getComponentsArray<Dummy>();
                 REQUIRE( dummies.size() == 1 );
-            }
 
+                mEntity->destroy();
+            }
             // check if dummy was deleted!
-            mManager->update();            
+
+            mManager->update();
+
             {
                 auto dummies = mManager->getComponentsArray<Dummy>();
                 REQUIRE( dummies.size() == 0 );
