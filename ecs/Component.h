@@ -52,7 +52,7 @@ namespace ecs{
         virtual void setup() { };
         virtual void drawUi() { };
         virtual void onDestroy(){ };
-
+        virtual Component clone(){ };
 
         Entity* getEntity(){ return mEntity; }
         Entity* getEntity() const { return mEntity; }

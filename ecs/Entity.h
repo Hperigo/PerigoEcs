@@ -32,7 +32,7 @@ namespace ecs{
 
         virtual ~Entity(){ }
 
-        EntityRef duplicate();
+        virtual EntityRef clone();
         
         bool isAlive() const { return mIsAlive; }
         virtual  void destroy() {

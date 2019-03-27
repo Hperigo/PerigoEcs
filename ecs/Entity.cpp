@@ -37,3 +37,9 @@ void Entity::markRefresh(){
     mManager->needsRefresh = true;
 }
 
+
+
+void Entity::clone(){
+    //NOT IMPLEMENTED
+    assert(false);
+}
