@@ -209,6 +209,8 @@ namespace ecs{
     };
     
     
+    
+    // Holds a EntityRef and destroys it when this object leaves it's scope
     template <typename T>
     class ScopedEntity {
     public:
@@ -229,7 +231,7 @@ namespace ecs{
         
     private:
         EntityRef entity;
-    };    
+    };
 }
 
 #endif //LEKSAPP_ENTITY_H

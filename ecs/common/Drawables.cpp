@@ -6,48 +6,35 @@
 //
 
 #include "Drawables.hpp"
+
 #include "Transform.hpp"
-#include "Entity.h"
+#include "Manager.h"
 
 using namespace std;
 using namespace ecs;
-ecs::DrawSystem* ecs::DrawSystem::mInstance = nullptr;
-uint32_t DrawTarget::id_count = 0;
 
-DrawSystem* ecs::DrawSystem::getInstance() {
-    if (mInstance == nullptr) {
-        static DrawSystem mS;
-        mInstance = &mS;
+void UpdateSystem::update() {
+    
+    if( doUpdate == false ){
+        return;
     }
-    
-    return mInstance;
+    numOfUpdateCalls = 0;
+    auto updatables = getManager()->getComponentsArray<Updatable>();
+    for( auto& u : updatables  ){
+        
+        if( u->mFn && u->doUpdate ){
+            u->mFn();
+            numOfUpdateCalls += 1;
+        }
+    }
 }
 
-
-IDrawable::IDrawable() {
-    
-    setDrawTarget(DrawSystem::getInstance()->getDefaultDrawTarget());
-}
-
-IDrawable::IDrawable( DrawTarget* iDrawTarget ){
-
-    iDrawTarget->addDrawable( this );
-    
-}
-
-
-void IDrawable::setTree( Transform* t, bool d ){
-    
+void UpdateSystem::setTreeUpdatable( Transform* t, bool d ){
     
     auto fn = [&, d](Transform& t) -> bool {
-        
-        
         auto e = t.getEntity();
-//        cout << "setting drawable for: " << e->getId() << " to: " << d << endl;
-        auto drawable = dynamic_cast<ecs::IDrawable*>(e);
-        // if cast fails, transform entity does not have a IDrawable interface
-        if (drawable) {
-            drawable->setDrawable(d);
+        if ( e->hasComponent<Updatable>() ) {
+            e->getComponent<Updatable>()->doUpdate = d;
         }
         
         return true;
@@ -56,54 +43,74 @@ void IDrawable::setTree( Transform* t, bool d ){
     // do on the root;
     fn( *t );
     t->descendTree(fn);
-    
 }
 
 
-void IDrawable::setDrawTarget( std::shared_ptr<ecs::DrawTarget> iDrawTarget){
+void IDrawable::setTreeVisible( Transform* t, bool d ){
     
-    if( iDrawTarget ){
+    
+    auto fn = [&, d](Transform& t) -> bool {
         
-        if( drawTargetOwner )
-            drawTargetOwner->removeDrawable( this );
+        auto e = t.getEntity();
+        auto drawable = dynamic_cast<ecs::IDrawable*>(e);
         
-        iDrawTarget->addDrawable(this);
-        
-    }else{ //if draw target is null, remove it from owner
-        
-        if( hasDrawTarget() == false ){
-            return;
+        // if cast fails, transform entity does not have a IDrawable interface
+        if (drawable) {
+            drawable->setDrawable(d);
         }
+
+        return true;
+    };
+    
+    // do on the root;
+    fn( *t );
+    t->descendTree(fn);
+}
+
+
+void DrawSystem2D::update() {
+
+    roots.clear();
+    auto entities = mManager->getEntitiesWithComponents<Transform>();
+    for( auto& e : entities ){
         
-        // is draw target is null, remove from current target
-        drawTargetOwner->removeDrawable(this);
-        drawTargetOwner = nullptr;
-    }
-    
-}
-
-void IDrawable::drawAtTop(){
-    
-    if( drawTargetOwner ){
-        drawTargetOwner->removeDrawable(this);
-        drawTargetOwner->addDrawable(this);
+        if( e->getComponent<Transform>()->isRoot() ){
+            roots.push_back(e);
+        }
     }
 }
+    
 
-IDrawable::~IDrawable(){
 
-    if( hasDrawTarget() ){
-        drawTargetOwner->removeDrawable( this );
+void DrawSystem2D::draw() {
+    numOfDrawCalls = 0;
+    for(auto& e :  roots  ){
+        drawEntity( e.get(), 0 );
     }
 }
 
 
+void DrawSystem2D::drawEntity(Entity* e, uint32_t depth ){
 
-void DrawTarget::swapDrawablesOrder(IDrawable* a, IDrawable* b){
-    
-    auto aIt = std::find(mDrawables.begin(), mDrawables.end(), a);
-    auto bIt = std::find(mDrawables.begin(), mDrawables.end(), b);
-    
-    std::swap(aIt, bIt);
-    
+    auto d = dynamic_cast<ecs::IDrawable*>( e );
+
+    if(d != nullptr ) {
+        bool shouldDraw = d->isDrawable(); // && e->hasComponent<DrawSystem2D::DefaultDrawLayer>();
+        if( shouldDraw ){
+            
+            d->preDraw();
+            d->draw();
+            
+            numOfDrawCalls++;
+        }
+    }
+
+    for( auto c : e->getComponent<Transform>()->getChildren() ){
+        drawEntity(c->getEntity(), depth + 1);
+    }
+
+    if( d != nullptr && d->isDrawable() ){
+        d->postDraw();
+    }
+
 }

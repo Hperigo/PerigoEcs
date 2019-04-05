@@ -31,13 +31,12 @@ public:
     
     void setTransform(const glm::mat4& transform );
     
-    glm::mat4 getLoclTransformMatrix() const { return mCTransform; }
+    glm::mat4 getLocalTransform() const { return mCTransform; }
     glm::mat4 getWorldTransform() {
         
         if( needsUpdate() ){
             updateMatrices();
         }
-        
         return mWorldTransform;
     }
     
@@ -50,7 +49,7 @@ public:
     void setWorldPos(const glm::vec3& pos);
     
     glm::vec3 getPos();
-    glm::vec3* getPosPtr(){  return &localPos; }
+    glm::vec3* getPosPtr(){ return &localPos; }
     void setPos(const glm::vec3& pos){ localPos = pos; mNeedsUpdate = true; }
 
     // anchor point -----
@@ -139,7 +138,7 @@ public:
     Transform* findChild(const Transform* child );
     
     /// Visit all of this components' descendents depth-first. TODO: separate visitor patterns from data.
-    void descendTree(const std::function<bool (Transform& parent)> &fn);
+    void descendTree(const std::function<bool (Transform& t)> &fn);
     
     
     size_t getId() const { return mId; }
