@@ -216,7 +216,6 @@ namespace ecs{
         { }
         
         ~ScopedEntity(){
-            std::cout << "scoped entity out" << std::endl;
             entity->destroy();
         }
         
@@ -230,8 +229,7 @@ namespace ecs{
         
     private:
         EntityRef entity;
-    };
-    
+    };    
 }
 
 #endif //LEKSAPP_ENTITY_H

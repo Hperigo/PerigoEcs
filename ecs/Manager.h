@@ -43,9 +43,7 @@ public:
     
     
     ScopedEntity<Entity> createScopedEntity() {
-        
         return ScopedEntity<Entity>(createEntity());
-        
     }
 
     template<typename T, typename... Args>
@@ -57,9 +55,13 @@ public:
         setupEntity(sharedEntity);
         return sharedEntity;
     }
+
+    template<typename T, typename... Args>
+    ScopedEntity<T> createScopedEntity(Args&&... args){
+        return ScopedEntity<T>( createEntity<T>( std::forward<Args>( args ) ...  ) );
+    }
+
     
-
-
     template<typename T, typename... TArgs>
     std::shared_ptr<T> createSystem(TArgs&&... _Args) {
 

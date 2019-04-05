@@ -140,6 +140,28 @@ TEST_CASE( "1: Manager tests" ) {
 
             REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
         }
+    }
+
+      SECTION( "Scoped Entities" ){
+
+        {           
+            auto mEntity = mManager->createScopedEntity<CustomEntity>();
+            mEntity->addComponent<std::string>( "string!" );
+
+            REQUIRE( mEntity->hasComponent<std::string>() == true );
+
+            REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 1 );
+
+            mEntity->removeComponent<std::string>();
+            REQUIRE( mEntity->hasComponent<std::string>() == false ); 
+        }
+
+        {
+            auto strings = mManager->getComponentsArray<std::string>();
+            REQUIRE( strings.size() == 0 );
+
+            REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
+        }
     
     }
 }
