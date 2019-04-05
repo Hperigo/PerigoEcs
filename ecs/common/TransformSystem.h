@@ -32,11 +32,11 @@ struct TransformSystem : ecs::System{
         for( auto& t : transforms) {
             
             
-            if( auto d = dynamic_cast<ecs::IDrawable*>( t->getEntity() ) ){
-                if( ! d->isDrawable() ){
-                    return;
-                }
-            }
+//            if( auto d = dynamic_cast<ecs::IDrawable*>( t->getEntity() ) ){
+//                if( ! d->isDrawable() ){
+//                    return;
+//                }
+//            }
             
             auto mat = t->getWorldTransform();
             

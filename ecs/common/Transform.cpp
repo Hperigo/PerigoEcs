@@ -74,7 +74,6 @@ void Transform::updateMatrices(bool updateChildren){
     transform *= glm::translate<float>(mat4(), -anchorPoint );
     
     mCTransform = transform;
-    
     if(parent)
     {
         mWorldTransform = parent->getWorldTransform() * mCTransform;
