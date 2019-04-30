@@ -256,6 +256,10 @@ void Transform::setParent( Transform* _parent, bool keepWorldCTransform)
 
 //
 void Transform::removeParent(bool keepWordCTransform, bool removeFromList){
+
+    if( parent == nullptr ){
+        return;
+    }
     
     cout << "will remove transform child: " << getId() << endl;
 

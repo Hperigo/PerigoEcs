@@ -58,7 +58,6 @@ void IDrawable::setTreeVisible( Transform* t, bool d ){
         if (drawable) {
             drawable->setDrawable(d);
         }
-
         return true;
     };
     
@@ -79,8 +78,6 @@ void DrawSystem2D::update() {
         }
     }
 }
-    
-
 
 void DrawSystem2D::draw() {
     numOfDrawCalls = 0;
@@ -105,8 +102,10 @@ void DrawSystem2D::drawEntity(Entity* e, uint32_t depth ){
         }
     }
 
-    for( auto c : e->getComponent<Transform>()->getChildren() ){
-        drawEntity(c->getEntity(), depth + 1);
+    if( e->hasComponent<Transform>() ){
+        for( auto c : e->getComponent<Transform>()->getChildren() ){
+            drawEntity(c->getEntity(), depth + 1);
+        }
     }
 
     if( d != nullptr && d->isDrawable() ){
