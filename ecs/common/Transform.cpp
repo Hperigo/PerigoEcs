@@ -261,8 +261,6 @@ void Transform::removeParent(bool keepWordCTransform, bool removeFromList){
         return;
     }
     
-    cout << "will remove transform child: " << getId() << endl;
-
     if(removeFromList)
         parent->removeChildFromList(this);
     
@@ -326,9 +324,8 @@ bool Transform::hasChild(const Transform* child, bool recursive ){
 
 
 bool Transform::removeChildFromList( Transform* child){
-    cout << "will remove transform: " << getId() << ", child: " << child->getId() << endl;
-    auto findIt = findChild(child);
-    
+
+    auto findIt = findChild(child);    
     if( findIt ){
         auto rmFn = [child](const Transform* t ) -> bool{
             return child == t;
