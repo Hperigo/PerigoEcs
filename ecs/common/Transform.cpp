@@ -325,7 +325,7 @@ bool Transform::hasChild(const Transform* child, bool recursive ){
 
 bool Transform::removeChildFromList( Transform* child){
 
-    auto findIt = findChild(child);    
+    auto findIt = findChild(child);
     if( findIt ){
         auto rmFn = [child](const Transform* t ) -> bool{
             return child == t;

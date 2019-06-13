@@ -63,10 +63,12 @@ namespace ecs{
         template <class T,
         typename std::enable_if< !std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
         T* addComponent() {
+            
+            //entity already has component!
             assert(!hasComponent<T>());
             std::shared_ptr<WrapperComponent<T>> rawComponent( new WrapperComponent<T>( T() ) );
             
-            auto cId = getComponentTypeID<WrapperComponent<T>>();
+            auto cId = getComponentTypeID<T>();
 
             addComponentToManager(cId, rawComponent);
             return getComponent< T >();
@@ -88,12 +90,14 @@ namespace ecs{
             
         }
         
+        //wrapperComponent
         template <class T, typename... TArgs,
         typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
         T* addComponent(TArgs&&... _Args) {
             
+            
             std::shared_ptr<WrapperComponent<T>> rawComponent( new WrapperComponent<T>( std::forward<TArgs>(_Args)... ) );
-            auto cId = getComponentTypeID<WrapperComponent<T>>();
+            auto cId = getComponentTypeID<T>(); //@NOTE: getComponentTypeID<WrapperComponent<T>>();
             addComponentToManager(cId, rawComponent);
             
             return  ( T* )rawComponent.get();
@@ -157,7 +161,7 @@ namespace ecs{
         template <class T,
         typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
         T* getComponent(){
-
+            assert( hasComponent<T>() );
             if( hasComponent<T>() )
                 return (T*)getComponentFromManager( getComponentTypeID<T>() );
             else
@@ -170,7 +174,7 @@ namespace ecs{
         inline std::vector< Component* > getComponents(){
             std::vector< Component* > components;
             
-            for( int i = 0; i < internal::lastID + 1; i++ ){
+            for( int i = 0; i < internal::getLastID() + 1; i++ ){
                 if( mComponentBitset[i] == true ){
                     auto c = getComponentFromManager( i );
                     assert(c != nullptr); // this components should not be null, if so, why is the bitset true?
