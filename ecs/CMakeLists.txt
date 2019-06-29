@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-set( ECS_LIBRARY_FILES "${CMAKE_CURRENT_LIST_DIR}/Entity.cpp"
+set( ECS_LIBRARY_FILES "${CMAKE_CURRENT_LIST_DIR}/Component.cpp"
+                        "${CMAKE_CURRENT_LIST_DIR}/Entity.cpp"
                         "${CMAKE_CURRENT_LIST_DIR}/System.cpp"
                         "${CMAKE_CURRENT_LIST_DIR}/Manager.cpp"
                         )
