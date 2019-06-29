@@ -4,12 +4,13 @@
 
 #include <memory>
 #include <bitset>
+#include <iostream>       // std::cout
 
 #ifndef ECSSAPP_COMPONENT_H
 #define ECSSAPP_COMPONENT_H
 
 #ifndef ECS_MAX_COMPONENTS
-    #define ECS_MAX_COMPONENTS 100
+    #define ECS_MAX_COMPONENTS 200
 #endif
 
 namespace ecs{
@@ -31,15 +32,17 @@ namespace ecs{
     namespace internal{
 
         //@TODO: maybe move this to std:: typeinfo?
-        static ComponentID lastID{0};
-        inline ComponentID getUniqueComponentID() noexcept {
-            return lastID++;
-        }
+        
+        ComponentID getLastID();
+        ComponentID getUniqueComponentID();
             
         template <typename T>
-        inline ComponentID getComponentTypeID() noexcept {
+        ComponentID getComponentTypeID() noexcept {
             
             static ComponentID typeID { internal::getUniqueComponentID() };
+            
+//            std::cout << typeid(T).name() << "  " << typeID << std::endl;
+            
             return typeID;
             
         }
