@@ -36,14 +36,17 @@ public:
 
     EntityRef createEntity(){
         Entity* e = new ecs::Entity();
-        auto sharedEntity = std::shared_ptr<ecs::Entity >( e );
+        auto sharedEntity = std::shared_ptr<ecs::Entity>( e );
         setupEntity(sharedEntity);
         return sharedEntity;
     }
     
     
-    ScopedEntity<Entity> createScopedEntity() {
-        return ScopedEntity<Entity>(createEntity());
+    ScopedEntityRef createScopedEntity() {
+
+        auto sharedEntity = std::make_shared<ecs::ScopedEntity>();
+        setupEntity(sharedEntity);
+        return sharedEntity;
     }
 
     template<typename T, typename... Args>
@@ -57,8 +60,13 @@ public:
     }
 
     template<typename T, typename... Args>
-    ScopedEntity<T> createScopedEntity(Args&&... args){
-        return ScopedEntity<T>( createEntity<T>( std::forward<Args>( args ) ...  ) );
+    std::shared_ptr<T> createScopedEntity(Args&&... args){
+        
+        T* e = new T( std::forward<Args>(args)... );
+        std::shared_ptr<T> sharedEntity = std::shared_ptr<T>( e );
+        
+        setupEntity(sharedEntity);
+        return sharedEntity;
     }
 
     

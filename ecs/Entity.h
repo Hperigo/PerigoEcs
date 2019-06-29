@@ -211,27 +211,16 @@ namespace ecs{
     
     
     // Holds a EntityRef and destroys it when this object leaves it's scope
-    template <typename T>
-    class ScopedEntity {
+    class ScopedEntity : public Entity {
     public:
-        ScopedEntity( EntityRef e ) : entity( e )
+        ScopedEntity()
         { }
         
         ~ScopedEntity(){
-            entity->destroy();
+            Entity::destroy();
         }
-        
-        T* operator ->(){
-            return (T*)( entity.get() );
-        }
-        
-        EntityRef getPtr(){
-            return entity;
-        }
-        
-    private:
-        EntityRef entity;
     };
+    typedef std::shared_ptr<ScopedEntity> ScopedEntityRef;
 }
 
 #endif //LEKSAPP_ENTITY_H

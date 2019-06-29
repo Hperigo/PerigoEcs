@@ -6,12 +6,14 @@
 2. `cmake ..`
 3. `make && ./tests/tests`
 
-### Todo: 
+### Todo:
     1. add aditional tests
         * child classes of ecs::Entity
         * Transforms 
         * Drawables
     
     3. threading? 
-    4. make drawables and Iupdatables a single object
+    4. make drawables and Iupdatables -a single object- A component
     5. measure performance
+
+

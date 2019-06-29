@@ -61,7 +61,6 @@ namespace ecs{
     protected:
             
         Entity* mEntity;
-        uint64_t mEntityId;
         Manager* mManager;
     
         std::size_t mComponentId;

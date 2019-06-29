@@ -25,8 +25,7 @@ struct Dummy : public ecs::Component {
 };
 
 TEST_CASE( "1: Manager tests" ) {
-    
-
+   
     SECTION( "resizing bigger changes size and capacity" ) {
         {
             ecs::EntityRef mEntity = mManager->createEntity();
