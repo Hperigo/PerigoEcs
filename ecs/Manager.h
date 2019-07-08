@@ -247,8 +247,6 @@ public:
             }
         }
 
-
-        
         uint32_t getNumOfActiveEntities(){
             uint32_t num = 0;
             for(auto e : mEntities){

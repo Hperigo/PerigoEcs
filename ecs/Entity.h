@@ -35,7 +35,7 @@ namespace ecs{
         virtual EntityRef clone();
         
         bool isAlive() const { return mIsAlive; }
-        virtual  void destroy() {
+        virtual void destroy() {
             mIsAlive = false;
             markRefresh();
         };
