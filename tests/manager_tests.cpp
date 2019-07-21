@@ -10,17 +10,15 @@ auto mManager = ecs::Manager::create();
 struct CustomEntity : public ecs::Entity{ 
 
     void setup() override{
-        setName("custom");
+		setName("custom");
     }
 
   ~CustomEntity(){ 
-        cout << "CustomEntity deconstructor!" << endl;
     }
 };
 
 struct Dummy : public ecs::Component {
     ~Dummy(){ 
-        cout << "Dummy deconstructor!" << endl;
     }    
 };
 
@@ -166,4 +164,24 @@ TEST_CASE( "1: Manager tests" ) {
 }
 
 
+TEST_CASE("Benchmarks"){
 
+		// now let's benchmark:
+    BENCHMARK("Normal Entity") {
+		ecs::EntityRef mEntity = mManager->createEntity();
+    };
+	
+	BENCHMARK("Scoped Entity") {
+       auto mEntity = mManager->createScopedEntity();
+    };
+
+	BENCHMARK("Add Component to Entity") {
+       auto mEntity = mManager->createEntity<CustomEntity>();
+	   mEntity->addComponent<Dummy>();
+    };
+
+	BENCHMARK("Remove Component to Entity") {
+       auto mEntity = mManager->createEntity<CustomEntity>();
+	   mEntity->removeComponent<Dummy>();
+    };
+}
