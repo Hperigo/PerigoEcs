@@ -19,7 +19,9 @@ struct CustomEntity : public ecs::Entity{
 
 struct Dummy : public ecs::Component {
     ~Dummy(){ 
-    }    
+    }
+
+	float value;
 };
 
 TEST_CASE( "1: Manager tests" ) {
@@ -94,6 +96,55 @@ TEST_CASE( "1: Manager tests" ) {
                 REQUIRE( dummies.size() == 0 );
             }
         }
+	
+
+		SECTION("Create multiple entities"){
+
+
+                ecs::EntityRef A = mManager->createEntity<CustomEntity>();
+                A->setName("A");
+                auto a = A->addComponent<Dummy>();
+				a->value = 100;
+
+				mManager->update();
+
+                ecs::EntityRef B = mManager->createEntity<CustomEntity>();
+                B->setName("B");
+                auto b = B->addComponent<Dummy>();
+				b->value = 200;
+
+				
+				mManager->update();
+
+
+				ecs::EntityRef C = mManager->createEntity<CustomEntity>();
+                C->setName("C");
+                auto c = C->addComponent<Dummy>();
+				c->value = 300;
+
+				mManager->update();
+
+				REQUIRE( A->getComponent<Dummy>()->value == 100 );  
+				REQUIRE( B->getComponent<Dummy>()->value == 200 );
+				REQUIRE( C->getComponent<Dummy>()->value == 300 );
+		
+				B->removeComponent<Dummy>();
+				mManager->update();
+
+				REQUIRE( A->getComponent<Dummy>()->value == 100 );
+				REQUIRE( B->hasComponent<Dummy>() == false );
+				REQUIRE( C->getComponent<Dummy>()->value == 300 );
+
+
+				A->destroy();
+				B->destroy();
+				C->destroy();
+
+				mManager->update();
+		}
+
+
+
 
         SECTION("Remove component"){
 
