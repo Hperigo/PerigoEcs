@@ -11,15 +11,15 @@
 using namespace ecs;
 //std::map< std::string , std::shared_ptr<ecs::internal::ComponentFactoryInterface>> Manager::typeFactory = std::map< std::string, std::shared_ptr<ecs::internal::ComponentFactoryInterface > >();
 
-bool Manager::EntityPool::fetchId(uint64_t* outputID){
-    
-    if( idPool.size() > 0 ){
-        *outputID = idPool.front();
-        idPool.pop();
-        return true;
-    }
-    return false;
-}
+//bool Manager::EntityPool::fetchId(uint64_t* outputID){
+//
+//    if( idPool.size() > 0 ){
+//        *outputID = idPool.front();
+//        idPool.pop();
+//        return true;
+//    }
+//    return false;
+//}
 
 // Manager::EntityPool Manager::EntityPool::duplicate(){
     
@@ -108,6 +108,7 @@ bool Manager::EntityPool::fetchId(uint64_t* outputID){
 
 void Manager::setup(){
     
+    
     if( needsRefresh == true ){
         refresh();
     }
@@ -132,6 +133,12 @@ void Manager::update(){
 }
 
 
+void Manager::addComponent(uint64_t entityId, ComponentID id, const ComponentRef component ){
+
+//        auto& componentVector = mEntityPool.mComponents[id];
+//        auto& componentVectorByType = mComponentsByType[id];
+}
+
 void Manager::refresh(){
 
     /* 
@@ -146,46 +153,19 @@ void Manager::refresh(){
     ... Goes up to ecs::MaxComponents
     */
 
-    for( ComponentID componentTypeId = 0; componentTypeId < mEntityPool.mComponents.size(); ++componentTypeId ){
-        auto& componentVector(mEntityPool.mComponents[componentTypeId]);
-        
-        for( EntityID entityId = 0; entityId < mEntityPool.mEntities.size(); ++entityId ){
-                
-                auto& component = componentVector[entityId];
-                if( component != nullptr ){
-
-                    auto e = mEntityPool.mEntities[entityId];
-                    if( e == nullptr || !e->hasComponentBitset(componentTypeId) || !e->isAlive() ){
-                        component->onDestroy();
-                        component.reset();
-                    }
-                }
-        }
-
-        mComponentsByType[componentTypeId].clear();
-        for(auto cp :  componentVector){
-            if(cp != nullptr){
-                mComponentsByType[componentTypeId].push_back( cp.get() );
-            }
-        }
-
-    } // end of component loop
-    
-
     //erase dead Entities
-    for( auto eIt = mEntityPool.mEntities.begin(); eIt != mEntityPool.mEntities.end(); ++eIt){
-        
-        if( *eIt == nullptr ){
-            continue;
-        }
-        
+    for( auto eIt = mEntities.begin(); eIt != mEntities.end(); ){
+
         if( ! (*eIt)->isAlive() )
         {
-            entityDeleter( (*eIt) );
+            auto e = *eIt;
+            entityDeleter( e );
+            eIt = mEntities.erase( eIt );
+            
+        }else{
+            ++eIt;
         }
     }
-    
-    needsRefresh = false;
 }
 
 void Manager::draw(){
@@ -197,29 +177,46 @@ void Manager::draw(){
     }
 }
 
+
+void Manager::entityDeleter(ecs::EntityRef e){
+
+
+    for( auto& components : mComponents.mComponents ){
+
+        if( components ){
+            components->remove(e.get());
+        }
+    }
+    
+    e.reset();
+
+}
+
 // prints a csv with the components in a row, and entities as collumns
 void Manager::printCheck(){
     // print entities id's
-    cout << "enti,";
-    for( int i = 0; i < mEntityPool.mEntities.size(); i++){
+//    cout << "enti,";
+//    for( int i = 0; i < mEntities.size(); i++){
+//
+//        if( mEntities[i] == nullptr ){
+//            cout << "*" << "," ;
+//        }else{
+//            cout << i << ",";
+//        }
+//    }
+//    cout << endl;
+//
+//    // print valid components
+//    for( int i = 0; i < 10; i++){
+//        cout << "id: " << i << ",";
+//
+//        for( int j = 0; j < mComponents[i].size(); j++){
+//            auto c = mEntityPool.mComponents[i][j];
+//            bool valid = c != nullptr;
+//            cout << valid << ",";
+//        }
+//        cout << "_" << endl;
+//    }
+//}
 
-        if( mEntityPool.mEntities[i] == nullptr ){
-            cout << "*" << "," ;
-        }else{
-            cout << i << ",";
-        }
-    }
-    cout << endl;
-    
-    // print valid components
-    for( int i = 0; i < 10; i++){
-        cout << "id: " << i << ",";
-
-        for( int j = 0; j < mEntityPool.mComponents[i].size(); j++){
-            auto c = mEntityPool.mComponents[i][j];
-            bool valid = c != nullptr;
-            cout << valid << ",";
-        }
-        cout << "_" << endl;
-    }
 }

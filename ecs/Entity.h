@@ -21,24 +21,21 @@ namespace ecs{
     class Manager;
     class System;
 
-    using EntityRef = std::shared_ptr<Entity>;    
+    using EntityRef = std::shared_ptr<Entity>;
+    using EntityWeakRef = std::weak_ptr<Entity>;
+    
     class Entity : public std::enable_shared_from_this<Entity> {
 
     public:
 
-        Entity() {
-            mNumOfEntities += 1;
-        }
+        Entity() {  }
 
         virtual ~Entity(){ }
 
         virtual EntityRef clone();
         
         bool isAlive() const { return mIsAlive; }
-        virtual void destroy() {
-            mIsAlive = false;
-            markRefresh();
-        };
+        virtual  void destroy();
 
         virtual void setup() { }
         virtual void drawUi() { };
@@ -60,152 +57,79 @@ namespace ecs{
              return  mComponentBitset[ i ];
         }
         
-        template <class T,
-        typename std::enable_if< !std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-        T* addComponent() {
-            
-            //entity already has component!
-            assert(!hasComponent<T>());
-            std::shared_ptr<WrapperComponent<T>> rawComponent( new WrapperComponent<T>( T() ) );
-            
-            auto cId = getComponentTypeID<T>();
-
-            addComponentToManager(cId, rawComponent);
-            return getComponent< T >();
-            
-        }
         
-        template <class T,
-        typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-        T* addComponent() {
+        template <class T>
+        T* addComponent(){
             
-            //entity already has component!
             assert(!hasComponent<T>());
             
-            std::shared_ptr<T> rawComponent( new T() );
-            auto cId = getComponentTypeID<T>();
-            addComponentToManager(cId, rawComponent);
+            mComponentBitset[ getComponentTypeID<T>() ] = true;
+            std::shared_ptr<ComponentContainer<T>> container = mComponentPool->getContainer<T>();
+            T* comp = (T*)container->create(this);
 
-            return  rawComponent.get();
+            if ( std::is_base_of<Component, T>::value == true ){
+                setupComponent((void*)comp);
+            }
             
+            return comp;
         }
         
-        //wrapperComponent
-        template <class T, typename... TArgs,
-        typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
+        template <class T, typename... TArgs>
         T* addComponent(TArgs&&... _Args) {
             
+            assert(!hasComponent<T>());
             
-            std::shared_ptr<WrapperComponent<T>> rawComponent( new WrapperComponent<T>( std::forward<TArgs>(_Args)... ) );
-            auto cId = getComponentTypeID<T>(); //@NOTE: getComponentTypeID<WrapperComponent<T>>();
-            addComponentToManager(cId, rawComponent);
+            std::shared_ptr<ComponentContainer<T>> container = mComponentPool->getContainer<T>();
+            mComponentBitset[ getComponentTypeID<T>() ] = true;
+            auto comp = container->create( this,  std::forward<TArgs>(_Args)...  );
             
-            return  ( T* )rawComponent.get();
+            if( std::is_base_of<Component, T>::value == true ){
+                setupComponent((void*)comp);
+            }
+            
+            return comp;
         }
         
-        template <class T, typename... TArgs,
-        typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-        T* addComponent(TArgs&&... _Args) {
-            
-            std::shared_ptr<T> rawComponent( new T(std::forward<TArgs>(_Args)... ));
-            
-            auto cId = getComponentTypeID<T>();
-            addComponentToManager(cId, rawComponent);
-            
-            return  rawComponent.get();
-            
-        }
-    
-        
-        
-        
-        // normal component
-        template <class T,
-        typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-        void removeComponent(){
-
-            auto componentTypeID = getComponentTypeID<T>();            
-            removeComponentWithId(componentTypeID);
-
-        }
-
-        // wrapper component
-        template <class T,
-        typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-        void removeComponent(){
-
-            auto componentTypeID = getComponentTypeID< WrapperComponent<T>>();
-            std::cout << "removed from wrapper: " << componentTypeID << std::endl;
-            removeComponentWithId(componentTypeID);
-        }
-
-        // actually remove the component
-        void removeComponentWithId( const ComponentID& componentTypeID ){
-            mComponentBitset.set(componentTypeID, 0);
-            markRefresh();
-        }
-        
-        template <class T,
-        typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
+        template <class T>
         T* getComponent(){
-            
-            assert(hasComponent< WrapperComponent<T> >());
-
-            Component* comp =   getComponentFromManager( getComponentTypeID< WrapperComponent<T> >() );
-            WrapperComponent<T>* wrapper = static_cast< WrapperComponent<T>* >(  comp );
-            
-            return & (wrapper->object);
+        
+            assert(hasComponent<T>());
+            auto container = mComponentPool->getContainer<T>();
+            return container->get( this );
         }
-        
-        
-        template <class T,
-        typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-        T* getComponent(){
-            assert( hasComponent<T>() );
-            if( hasComponent<T>() )
-                return (T*)getComponentFromManager( getComponentTypeID<T>() );
-            else
-                return nullptr;
+
+        template <class T>
+        void removeComponent(){
+            
+            assert(hasComponent<T>());
+            
+            std::shared_ptr<ComponentContainer<T>> container = mComponentPool->getContainer<T>();
+            mComponentBitset[ getComponentTypeID<T>() ] = false;
+
+            container->remove( this );
         }
         
         inline std::bitset<MaxComponents> getComponentBitset(){ return mComponentBitset; }
 
-
-        inline std::vector< Component* > getComponents(){
-            std::vector< Component* > components;
-            
-            for( int i = 0; i < internal::getLastID() + 1; i++ ){
-                if( mComponentBitset[i] == true ){
-                    auto c = getComponentFromManager( i );
-                    assert(c != nullptr); // this components should not be null, if so, why is the bitset true?
-                    components.push_back( c );
-                }
-
-            }
-            
-            return components;
-        }
-        
         Manager* getManager() { return mManager; }
-
-        std::function<void()> onDestroy;
+        
+        void setOnLateSetupFn( const std::function<void()>& fn ){ onLateSetup = fn; }
         
     protected:
+
+        void setupComponent(void* input);
         
-        ecs::Component* getComponentFromManager(ComponentID cId) const;
-        void addComponentToManager( ComponentID cId,  const ComponentRef& component );
         void markRefresh();
 
         Manager* mManager;
+        ComponentPool* mComponentPool;
+        
         bool mIsAlive{ true };
         
         std::bitset<MaxComponents> mComponentBitset;
-        
-        static unsigned int mNumOfEntities;
         unsigned int mEntityId;
         
         std::string mName;
-        
         friend class Manager;
         
         //use this to initialize components in the entity constructor
@@ -215,16 +139,27 @@ namespace ecs{
     
     
     // Holds a EntityRef and destroys it when this object leaves it's scope
-    class ScopedEntity : public Entity {
+    template <typename T>
+    class ScopedEntity {
     public:
-        ScopedEntity()
+        ScopedEntity( EntityRef e ) : entity( e )
         { }
         
         ~ScopedEntity(){
-            Entity::destroy();
+            entity->destroy();
         }
+        
+        T* operator ->(){
+            return (T*)( entity.get() );
+        }
+        
+        EntityRef getPtr(){
+            return entity;
+        }
+        
+    private:
+        EntityRef entity;
     };
-    typedef std::shared_ptr<ScopedEntity> ScopedEntityRef;
 }
 
 #endif //LEKSAPP_ENTITY_H

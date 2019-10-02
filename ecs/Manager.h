@@ -11,7 +11,6 @@
 
 #include <vector>
 #include <queue>
-#include <array>
 
 
 #include <iostream>
@@ -36,17 +35,14 @@ public:
 
     EntityRef createEntity(){
         Entity* e = new ecs::Entity();
-        auto sharedEntity = std::shared_ptr<ecs::Entity>( e );
+        auto sharedEntity = std::shared_ptr<ecs::Entity >( e );
         setupEntity(sharedEntity);
         return sharedEntity;
     }
     
     
-    ScopedEntityRef createScopedEntity() {
-
-        auto sharedEntity = std::make_shared<ecs::ScopedEntity>();
-        setupEntity(sharedEntity);
-        return sharedEntity;
+    ScopedEntity<Entity> createScopedEntity() {
+        return ScopedEntity<Entity>(createEntity());
     }
 
     template<typename T, typename... Args>
@@ -60,13 +56,8 @@ public:
     }
 
     template<typename T, typename... Args>
-    std::shared_ptr<T> createScopedEntity(Args&&... args){
-        
-        T* e = new T( std::forward<Args>(args)... );
-        std::shared_ptr<T> sharedEntity = std::shared_ptr<T>( e );
-        
-        setupEntity(sharedEntity);
-        return sharedEntity;
+    ScopedEntity<T> createScopedEntity(Args&&... args){
+        return ScopedEntity<T>( createEntity<T>( std::forward<Args>( args ) ...  ) );
     }
 
     
@@ -102,65 +93,52 @@ public:
     
     void refresh();
 
-    void addComponent(uint64_t entityId, ComponentID id, const ComponentRef component){
+    void addComponent(uint64_t entityId, ComponentID id, const ComponentRef component);
 
-        auto& componentVector = mEntityPool.mComponents[id];
-        auto& componentVectorByType = mComponentsByType[id];
-        
-        if( entityId >= componentVector.size() ){
-            
-            mEntityPool.resizeComponentVector();
-            
-            
-            assert( componentVector.size() );
-            componentVector[entityId] = component;
-            componentVectorByType.push_back( component.get() );
-            
-        }else{
-            
-            componentVector[entityId] = component;
-            componentVectorByType.push_back( component.get() );
 
-        }
+    
+//    template <class T,
+//    typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
+//    const std::vector<T*>& getComponentsArray() {
+//
+//        if( needsRefresh ){
+//            refresh();
+//        }
+//
+//        auto _id = getComponentTypeID<T>();
+//        return  (std::vector<T*>&) mComponentsByType[_id];
+//    }
+    
+//    template <class T,
+//    typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
+//    const std::vector< WrapperComponent<T>* >& getComponentsArray() {
+//
+//        if( needsRefresh ){
+//            refresh();
+//        }
+//
+//        auto _id = getComponentTypeID< WrapperComponent<T> >();
+//        return  (std::vector< WrapperComponent<T>* >&) mComponentsByType[_id];
+//    }
+//
 
+    template <typename T>
+    std::vector<T>* getComponentsArray(){
+        auto container = mComponents.getContainer<T>();
+        return container->getDataPtr();
     }
-
+    
     template<class T>
     void setBitset(std::bitset<MaxComponents>* bitset, T head)const {
         bitset->set( head, 1 );
     }
-
-
+    
+    
     template <class T, class ...Args>
     void  setBitset(std::bitset<MaxComponents>* bitset, T head ,  Args ... args) const {
         setBitset( bitset, head );
         setBitset( bitset, args ... );
     }
-    
-    template <class T,
-    typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-    const std::vector<T*>& getComponentsArray() {
-        
-        if( needsRefresh ){
-            refresh();
-        }
-        
-        auto _id = getComponentTypeID<T>();
-        return  (std::vector<T*>&) mComponentsByType[_id];
-    }
-    
-    template <class T,
-    typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-    const std::vector< WrapperComponent<T>* >& getComponentsArray() {
-        
-        if( needsRefresh ){
-            refresh();
-        }
-        
-        auto _id = getComponentTypeID< WrapperComponent<T> >();
-        return  (std::vector< WrapperComponent<T>* >&) mComponentsByType[_id];
-    }
-    
     
     template <class ...Args>
     std::vector<std::shared_ptr<Entity>> getEntitiesWithComponents() const {
@@ -168,7 +146,7 @@ public:
         std::bitset<MaxComponents> bitsetMask;
         setBitset( &bitsetMask, getComponentTypeID<Args>()... );
         std::vector<std::shared_ptr<Entity>> entities;
-        for( auto &e : mEntityPool.mEntities ){
+        for( auto &e : mEntities ){
             
             if(auto shared = e ){
                 bool b = ( shared->getComponentBitset() | bitsetMask  ) == shared->getComponentBitset(); // check if entity has all the bits in the bitset mask
@@ -189,140 +167,55 @@ public:
     
     std::vector<EntityRef> getEntities() {
         
-        std::vector<EntityRef> output;
-        for( auto &e : mEntityPool.mEntities ){
-            
-            if( auto shared = e ){
-                output.push_back(shared);
-            }
-        }
-
-        return output;
+//        std::vector<EntityRef> output;
+//        for( auto &e : mEntities ){
+//
+//            if( auto shared = e ){
+//                output.push_back(shared);
+//            }
+//        }
+//
+//        return output;
+        return mEntities;
     }
     std::vector<SystemRef>& getSystems() { return mSystems; }
     
     
     void printCheck();
-    
-    struct EntityPool {
 
-        EntityPool(){
-            
-        }
-        EntityPool duplicate();
-        
-        void setPool(const EntityPool& otherPool );
-        
-        void addEntityToPool( const EntityRef& e ) {
-            // grabs an empty ( available id) from pool, if that's not available create a new space
-            uint64_t eId = -1;
-            if( fetchId( &eId ) ){
-                e->mEntityId = eId;
-                mEntities[eId] = e;
-            }else{
-
-                e->mEntityId = mEntities.size();
-                mEntities.emplace_back(e);
-        
-            }
-        }
-
-        void resizeEntityBuffer(){
-            
-            // resize entity vector and later the components vector
-            mEntities.resize(resizePool);
-            
-            // add empty id's to pool
-            for(int i = 0; i < resizePool; i++){
-                idPool.push(i);
-            }
-            
-            resizeComponentVector();
-        }
-        
-        void resizeComponentVector(){
-            
-            for(int i = 0; i < MaxComponents; i++){
-                mComponents[i].resize( mEntities.size() );
-            }
-        }
-
-        uint32_t getNumOfActiveEntities(){
-            uint32_t num = 0;
-            for(auto e : mEntities){
-                if(e){
-                    num++;
-                }
-            }
-            return num;
-        }
-        
-        
-        void cleanup(){
-
-            uint64_t index;
-            
-            for( auto e = mEntities.begin(); e != mEntities.end(); ){
-                // if( *e == nullptr ){
-                //     mEntities.erase(e);
-                    
-                // }else{
-                //     ++e;
-                //     ++index;
-                // }
-            }
-        }
-
-
-        std::vector< EntityRef > mEntities;
-        std::array< std::vector<ComponentRef>, MaxComponents> mComponents;
-        
-        std::queue<uint64_t> idPool;
-        bool fetchId(uint64_t* outputID);
-        const int resizePool = 512;
-    };
-
-    EntityPool mEntityPool;
     
 protected:
     
     //  ---- general manager vars -------
-    std::array< std::vector<Component*>, MaxComponents> mComponentsByType;
     std::vector<SystemRef> mSystems;
+    
+    
+    std::vector< EntityRef > mEntities;
+    ComponentPool mComponents;
     
     bool needsRefresh{false};
     bool isManagerInitialized = false;
 
+    unsigned int entitiesCreated = 0;
     // setup entity after it's creation
     void setupEntity(const EntityRef& e ){
 
+        e->mEntityId = entitiesCreated;
+        mEntities.push_back( e );
+
         e->mManager = this;
-        
-        mEntityPool.addEntityToPool( e ); // add a weak_ptr to pool
-        mEntityPool.resizeComponentVector();
-        
+        e->mComponentPool = &mComponents;
+
         e->setup();
         
         if( e->onLateSetup ){
             e->onLateSetup();
         }
         
-    }
-    static void entityDeleter( ecs::EntityRef e ){
-
-        if( e->onDestroy ){
-            e->onDestroy();
-        }
-
-        e->markRefresh();
-        auto& pool = e->getManager()->mEntityPool;
-        auto id = e->getId();
-        pool.idPool.push(id);
-
-        pool.mEntities[id] = nullptr;
         
-        e.reset();
+        entitiesCreated += 1;
     }
+    void entityDeleter( ecs::EntityRef e );
 
     friend class Entity;
 };

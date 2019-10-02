@@ -35,13 +35,11 @@ namespace ecs {
 
     struct Updatable : public ecs::Component {
         std::function<void()> mFn;
-        
         bool doUpdate = true;
     };
     
     struct UpdateSystem : public ecs::System {
         void update() override;
-        
         bool doUpdate = true;
         size_t getNumOfUpdateCalls() { return numOfUpdateCalls; }
         

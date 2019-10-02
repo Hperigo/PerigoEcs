@@ -5,9 +5,9 @@
 //  Created by Henrique on 12/4/18.
 //
 
-#include "Drawables.hpp"
+#include "Drawables.h"
 
-#include "Transform.hpp"
+#include "Transform.h"
 #include "Manager.h"
 
 using namespace std;
@@ -20,10 +20,10 @@ void UpdateSystem::update() {
     }
     numOfUpdateCalls = 0;
     auto updatables = getManager()->getComponentsArray<Updatable>();
-    for( auto& u : updatables  ){
+    for( auto& u : *updatables  ){
         
-        if( u->mFn && u->doUpdate ){
-            u->mFn();
+        if( u.mFn && u.doUpdate ){
+            u.mFn();
             numOfUpdateCalls += 1;
         }
     }
@@ -42,7 +42,7 @@ void UpdateSystem::setTreeUpdatable( Transform* t, bool d ){
     
     // do on the root;
     fn( *t );
-    t->descendTree(fn);
+//    t->descendTree(fn);
 }
 
 
@@ -63,7 +63,7 @@ void IDrawable::setTreeVisible( Transform* t, bool d ){
     
     // do on the root;
     fn( *t );
-    t->descendTree(fn);
+//    t->descendTree(fn);
 }
 
 
@@ -73,9 +73,9 @@ void DrawSystem2D::update() {
     auto entities = mManager->getEntitiesWithComponents<Transform>();
     for( auto& e : entities ){
         
-        if( e->getComponent<Transform>()->isRoot() ){
-            roots.push_back(e);
-        }
+//        if( e->getComponent<Transform>()->isRoot() ){
+//            roots.push_back(e);
+//        }
     }
 }
 
@@ -102,11 +102,11 @@ void DrawSystem2D::drawEntity(Entity* e, uint32_t depth ){
         }
     }
 
-    if( e->hasComponent<Transform>() ){
-        for( auto c : e->getComponent<Transform>()->getChildren() ){
-            drawEntity(c->getEntity(), depth + 1);
-        }
-    }
+//    if( e->hasComponent<Transform>() ){
+//        for( auto c : e->getComponent<Transform>()->getChildren() ){
+//            drawEntity(c->getEntity(), depth + 1);
+//        }
+//    }
 
     if( d != nullptr && d->isDrawable() ){
         d->postDraw();

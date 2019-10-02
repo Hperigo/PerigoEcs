@@ -7,22 +7,24 @@ using namespace std;
 
 auto mManager = ecs::Manager::create();
 
-struct CustomEntity : public ecs::Entity{ 
-
-    void setup() override{
-		setName("custom");
-    }
-
-  ~CustomEntity(){ 
-    }
-};
-
 struct Dummy : public ecs::Component {
     ~Dummy(){ 
     }
 
 	float value;
 };
+
+struct CustomEntity : public ecs::Entity{ 
+
+    void setup() override{
+	setName("custom");
+    }
+
+  ~CustomEntity(){ 
+    }
+};
+
+
 
 TEST_CASE( "1: Manager tests" ) {
    
@@ -48,7 +50,7 @@ TEST_CASE( "1: Manager tests" ) {
         REQUIRE( mManager->getEntities().size() == 0 );
 
         //but we should have some available ID in the pool
-        REQUIRE( mManager->mEntityPool.idPool.size() == 1 );
+	//REQUIRE( mManager->mEntityPool.idPool.size() == 1 );
 
     } 
 
@@ -83,7 +85,7 @@ TEST_CASE( "1: Manager tests" ) {
                 mEntity->addComponent<Dummy>();
 
                 auto dummies = mManager->getComponentsArray<Dummy>();
-                REQUIRE( dummies.size() == 1 );
+                REQUIRE( dummies->size() == 1 );
 
                 mEntity->destroy();
             }
@@ -93,7 +95,7 @@ TEST_CASE( "1: Manager tests" ) {
 
             {
                 auto dummies = mManager->getComponentsArray<Dummy>();
-                REQUIRE( dummies.size() == 0 );
+                REQUIRE( dummies->size() == 0 );
             }
         }
 	
@@ -161,7 +163,7 @@ TEST_CASE( "1: Manager tests" ) {
 
                 {
                     auto dummies = mManager->getComponentsArray<Dummy>();
-                    REQUIRE( dummies.size() == 0 );
+                    REQUIRE( dummies->size() == 0 );
                     
                     REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
                 }
@@ -184,7 +186,7 @@ TEST_CASE( "1: Manager tests" ) {
 
         {
             auto strings = mManager->getComponentsArray<std::string>();
-            REQUIRE( strings.size() == 0 );
+            REQUIRE( strings->size() == 0 );
 
             REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
         }
@@ -206,7 +208,7 @@ TEST_CASE( "1: Manager tests" ) {
 
         {
             auto strings = mManager->getComponentsArray<std::string>();
-            REQUIRE( strings.size() == 0 );
+            REQUIRE( strings->size() == 0 );
 
             REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
         }
@@ -233,6 +235,7 @@ TEST_CASE("Benchmarks"){
 
 	BENCHMARK("Remove Component to Entity") {
        auto mEntity = mManager->createEntity<CustomEntity>();
-	   mEntity->removeComponent<Dummy>();
+       mEntity->addComponent<Dummy>();
+       mEntity->removeComponent<Dummy>();
     };
 }

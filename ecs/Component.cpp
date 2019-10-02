@@ -1,8 +1,5 @@
 #include "Component.h"
-
-
-
-
+#include "Entity.h"
 
 namespace ecs {
     
@@ -20,3 +17,4 @@ namespace ecs {
         
     }
 }
+

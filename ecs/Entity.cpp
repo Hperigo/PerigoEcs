@@ -9,26 +9,20 @@
 
 using namespace ecs;
 
-unsigned int Entity::mNumOfEntities = 0;
 
-void Entity::addComponentToManager( ComponentID cId, const ComponentRef& component){
+void Entity::setupComponent( void* input){
 
-    mManager->addComponent(getId(), cId, component );
-
-    mComponentBitset[cId] = true;
-
+//    mManager->addComponent(getId(), cId, component );
+    
+    Component* component = (Component*) input;
     component->mEntity = this;
     component->mManager = mManager;
-    component->mComponentId = cId;
     component->setup();
-
 }
 
-ecs::Component* Entity::getComponentFromManager(ComponentID cId) const {
-    
-    auto& pool = mManager->mEntityPool;
-    auto component = pool.mComponents[cId][mEntityId].get();
-    return component;
+void Entity::destroy(){
+    mIsAlive = false;
+    markRefresh();
 }
 
 void Entity::markRefresh(){
