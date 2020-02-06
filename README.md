@@ -12,8 +12,8 @@ It also provides a couple of nice features that I think is usefull on a day-to-d
 
  *some references that I used to make this:*
  
- 1. EntityX
- 2. Vitoreo Romero tutorials
+ 1. [EntityX](https://github.com/alecthomas/entityx)
+ 2. [Vittorio Romeo tutorials]( 
  
 I initially made the mistake of creating each component as an shared_ptr, that's a huge performance killer and sort of removes the purpuse of having the components packed into a sequencial array. Ideally we should use a hash based system like the one described over here:
 [http://bitsquid.blogspot.com/2014/08/building-data-oriented-entity-system.html](http://bitsquid.blogspot.com/2014/08/building-data-oriented-entity-system.html)
@@ -122,9 +122,8 @@ and to create one:
     1. add aditional tests
         * child classes of ecs::Entity
         * Transforms 
-        * Drawables components
+        * Drawables and Updatables components
     
-    3. threading? 
+    3. Threading?
     4. make drawables and Iupdatables -a single object and components, not interfaces
-    5. measure performance
-    6. Merge ofxEcs and Ecs-Cinder into one block
+    5. Merge ofxEcs and Ecs-Cinder into one block
