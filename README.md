@@ -8,7 +8,7 @@ It also provides a couple of nice features that I think is usefull on a day-to-d
 3. A somewhat naive serialzation mechanism (usufull for saving and loading scenes  )
 
 ### Disclameer
- I haven't done any performance tests but it's probably not the fastest ecs in the market, it's also not used in production extensively, so it is somewhat of a learning project, so use with care! 
+ I haven't done any performance tests but it's probably not the fastest ecs in the market, it's also not used in production extensively, so it is somewhat of a **learning project, so use with care!**
 
  *some references that I used to make this:*
  
