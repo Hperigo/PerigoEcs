@@ -50,7 +50,7 @@ The component will be added to the manager, that way we ensure all ColorComponen
 You can modify a component in a entity by using the function “getComponent<T>()”
 
 ```
-exampleEntity->getComponent<ColorComponent>()->mColor.r = 1.0;
+exampleEntity->getComponent<ColorComponent>()->r = 1.0;
 
 for( auto& c: mManager.getComponentArray<ColorComponent>() ){
   shared_ptr<ColorComponent> cc = static_pointer_cast<ColorComponent>(c);
