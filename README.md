@@ -13,7 +13,7 @@ It also provides a couple of nice features that I think is usefull on a day-to-d
  *some references that I used to make this:*
  
  1. [EntityX](https://github.com/alecthomas/entityx)
- 2. [Vittorio Romeo tutorials]( 
+ 2. [Vittorio Romeo tutorials](https://www.youtube.com/watch?v=QAmtgvwHInM&t=1s)
  
 I initially made the mistake of creating each component as an shared_ptr, that's a huge performance killer and sort of removes the purpuse of having the components packed into a sequencial array. Ideally we should use a hash based system like the one described over here:
 [http://bitsquid.blogspot.com/2014/08/building-data-oriented-entity-system.html](http://bitsquid.blogspot.com/2014/08/building-data-oriented-entity-system.html)
@@ -36,7 +36,9 @@ You can create an entity with the ecs::Manager.
 
 ```
 struct ColorComponent : public ecs::Component{
-  Color mColor;
+ float r;
+ float g;
+ float b;
 };
 ```
 
@@ -48,18 +50,20 @@ The component will be added to the manager, that way we ensure all ColorComponen
 You can modify a component in a entity by using the function “getComponent<T>()”
 
 ```
-exampleEntity->getComponent<ColorComponent>()->mColor = Color::gray(0.5);
+exampleEntity->getComponent<ColorComponent>()->mColor.r = 1.0;
 
 for( auto& c: mManager.getComponentArray<ColorComponent>() ){
-
-shared_ptr<ColorComponent> cc = static_pointer_cast<ColorComponent>(c);
-cc->mColor = Color(1.0f, 0.0f, 0.0f);
+  shared_ptr<ColorComponent> cc = static_pointer_cast<ColorComponent>(c);
+  cc->mColor = Color(1.0f, 0.0f, 0.0f);
 }
 ```
 You can also access all entities with a component mask:
 
-```for( auto& c: mManager.getEntitiesWithComponents<ColorComponent, RectComponent>() ){
-e.getComponent<ColorComponent>->mColor = Color(1.0f, 0.0f, 0.0f); 
+```
+for( auto& c: mManager.getEntitiesWithComponents<ColorComponent, RectComponent>() ){
+   e.getComponent<ColorComponent>()->r = 1.0;
+   e.getComponent<ColorComponent>()->g = 0.0;
+   e.getComponent<ColorComponent>()->b = 0.0;
 }
 ```
 
