@@ -16,5 +16,8 @@ namespace ecs {
         }
         
     }
+    
+    
+    Component::~Component(){}
 }
 

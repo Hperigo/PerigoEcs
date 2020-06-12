@@ -11,12 +11,13 @@
 
 
 namespace ecs{
-    using SystemRef = std::shared_ptr<class System>;
+    
     class Manager;
-
     class System {
     public:
-
+        
+        System(){ }
+        
         virtual void setup() {  }
 
         virtual void update(){  }
@@ -39,7 +40,8 @@ namespace ecs{
         bool drawable = true;
 
     };
-
+    
+    typedef std::shared_ptr<System> SystemRef;
 }// endof ecs
 
 

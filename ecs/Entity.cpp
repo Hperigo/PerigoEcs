@@ -17,7 +17,6 @@ void Entity::setupComponent( void* input){
     Component* component = (Component*) input;
     component->mEntity = this;
     component->mManager = mManager;
-    component->setup();
 }
 
 void Entity::destroy(){
@@ -27,10 +26,4 @@ void Entity::destroy(){
 
 void Entity::markRefresh(){
     mManager->needsRefresh = true;
-}
-
-EntityRef Entity::clone(){
-    //NOT IMPLEMENTED
-    assert(false);
-    return nullptr;
 }

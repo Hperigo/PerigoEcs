@@ -23,7 +23,7 @@ class Manager {
 
 public:
     Manager(){
-    
+        printf("manager\n");
     }
     
     ~Manager(){ }
@@ -66,15 +66,12 @@ public:
 
         std::shared_ptr<T> rawSystem( new T(std::forward<TArgs>(_Args)... ));
 
-        SystemRef systemPtr{ rawSystem };
+        SystemRef systemPtr = rawSystem;
         rawSystem->mManager = this;
         
         mSystems.push_back( rawSystem );
         
-        if( isManagerInitialized == true ){
-            rawSystem->setup();
-        }
-        
+        rawSystem->setup();
         return  rawSystem;
     }
 
@@ -94,34 +91,7 @@ public:
     void refresh();
 
     void addComponent(uint64_t entityId, ComponentID id, const ComponentRef component);
-
-
     
-//    template <class T,
-//    typename std::enable_if< std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-//    const std::vector<T*>& getComponentsArray() {
-//
-//        if( needsRefresh ){
-//            refresh();
-//        }
-//
-//        auto _id = getComponentTypeID<T>();
-//        return  (std::vector<T*>&) mComponentsByType[_id];
-//    }
-    
-//    template <class T,
-//    typename std::enable_if< ! std::is_base_of<ecs::Component, T>::value, T>::type* = nullptr>
-//    const std::vector< WrapperComponent<T>* >& getComponentsArray() {
-//
-//        if( needsRefresh ){
-//            refresh();
-//        }
-//
-//        auto _id = getComponentTypeID< WrapperComponent<T> >();
-//        return  (std::vector< WrapperComponent<T>* >&) mComponentsByType[_id];
-//    }
-//
-
     template <typename T>
     std::vector<T>* getComponentsArray(){
         auto container = mComponents.getContainer<T>();
@@ -159,23 +129,8 @@ public:
         return entities;
     };
 
-    
-    // EntityRef copyEntity( const EntityRef& iEntity ){
-    //     return copyEntity(iEntity.get());
-    // }
-    
-    
+
     std::vector<EntityRef> getEntities() {
-        
-//        std::vector<EntityRef> output;
-//        for( auto &e : mEntities ){
-//
-//            if( auto shared = e ){
-//                output.push_back(shared);
-//            }
-//        }
-//
-//        return output;
         return mEntities;
     }
     std::vector<SystemRef>& getSystems() { return mSystems; }
@@ -188,8 +143,6 @@ protected:
     
     //  ---- general manager vars -------
     std::vector<SystemRef> mSystems;
-    
-    
     std::vector< EntityRef > mEntities;
     ComponentPool mComponents;
     
@@ -197,26 +150,27 @@ protected:
     bool isManagerInitialized = false;
 
     unsigned int entitiesCreated = 0;
+    
     // setup entity after it's creation
     void setupEntity(const EntityRef& e ){
-
+    
         e->mEntityId = entitiesCreated;
-        mEntities.push_back( e );
+        entitiesCreated += 1;
 
+        mEntities.push_back( e );
+    
+        printf("created entity: %u, %u\n", entitiesCreated, e->getId() );
+    
         e->mManager = this;
         e->mComponentPool = &mComponents;
-
+    
         e->setup();
-        
+    
         if( e->onLateSetup ){
             e->onLateSetup();
         }
-        
-        
-        entitiesCreated += 1;
-    }
+    };
     void entityDeleter( ecs::EntityRef e );
-
     friend class Entity;
 };
 }

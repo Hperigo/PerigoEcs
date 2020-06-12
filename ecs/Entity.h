@@ -10,7 +10,7 @@
 #include <array>
 #include <vector>
 #include <functional>
-#include <assert.h>  
+#include <assert.h>
 #include "Component.h"
 
 
@@ -24,18 +24,15 @@ namespace ecs{
     using EntityRef = std::shared_ptr<Entity>;
     using EntityWeakRef = std::weak_ptr<Entity>;
     
-    class Entity : public std::enable_shared_from_this<Entity> {
+    class Entity {
 
     public:
 
         Entity() {  }
-
         virtual ~Entity(){ }
 
-        virtual EntityRef clone();
-        
         bool isAlive() const { return mIsAlive; }
-        virtual  void destroy();
+        virtual void destroy();
 
         virtual void setup() { }
         virtual void drawUi() { };
@@ -56,8 +53,7 @@ namespace ecs{
         bool hasComponentBitset( const size_t i ) const {
              return  mComponentBitset[ i ];
         }
-        
-        
+
         template <class T>
         T* addComponent(){
             
@@ -115,8 +111,11 @@ namespace ecs{
         
         void setOnLateSetupFn( const std::function<void()>& fn ){ onLateSetup = fn; }
         
+        
     protected:
-
+        
+        const char* name;
+        
         void setupComponent(void* input);
         
         void markRefresh();
@@ -136,8 +135,7 @@ namespace ecs{
         std::function<void()> onLateSetup;
     };
     
-    
-    
+
     // Holds a EntityRef and destroys it when this object leaves it's scope
     template <typename T>
     class ScopedEntity {

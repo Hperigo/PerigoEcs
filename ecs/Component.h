@@ -22,10 +22,9 @@ using namespace std;
 namespace ecs{
 
     // forward decls...
-    class Component;
+    struct Component;
 
     class Entity;
-    using EntityRef = std::shared_ptr<Entity>;
     class Manager;
 
     using ComponentID = std::size_t;
@@ -55,11 +54,9 @@ namespace ecs{
     struct Component {
 
     public:
-        virtual ~Component() { }
-        virtual void setup() { };
-        virtual void drawUi() { };
+        virtual ~Component();
+        virtual bool drawUi() { return false; };
         virtual void onDestroy(){ };
-        virtual Component clone(){ return Component(); };
 
         Entity* getEntity(){ return mEntity; }
         Entity* getEntity() const { return mEntity; }
@@ -86,7 +83,7 @@ namespace ecs{
     
     class ComponentContainerBase {
     public:
-        
+        virtual ~ComponentContainerBase(){ };
         virtual void remove( Entity* e ) = 0;
 
 //       we might not need theese
@@ -98,6 +95,9 @@ namespace ecs{
     template <typename T>
     class ComponentContainer : public ComponentContainerBase {
     public:
+        
+        ~ComponentContainer(){};
+        
         T* get( Entity* e ) {
             size_t index = entityKeys[e];
             return &data[index];
@@ -156,16 +156,14 @@ namespace ecs{
         }
         
     private:
-        
-        
         std::vector<T> data;
         std::unordered_map< Entity* , size_t> entityKeys;
     };
-    
-    
+
     struct ComponentPool {
         std::array< ComponentContainerBaseRef, MaxComponents> mComponents;
         
+        //get a component with the cointainer key
         template <typename T>
         std::shared_ptr< ComponentContainer<T> > getContainer(){
             std::size_t componentId = getComponentTypeID<T>();
