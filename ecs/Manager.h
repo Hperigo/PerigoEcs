@@ -33,34 +33,19 @@ public:
         return std::make_shared<Manager>( std::forward<Args>(args)...  );
     }
 
-    EntityRef createEntity(){
+    Entity* createEntity(){
         Entity* e = new ecs::Entity();
-        auto sharedEntity = std::shared_ptr<ecs::Entity >( e );
-        setupEntity(sharedEntity);
-        return sharedEntity;
+        return e;
     }
     
-    
-    ScopedEntity<Entity> createScopedEntity() {
-        return ScopedEntity<Entity>(createEntity());
-    }
-
     template<typename T, typename... Args>
-    std::shared_ptr<T> createEntity(Args&&... args){
+    T* createEntity(Args&&... args){
         
         T* e = new T(std::forward<Args>(args)... );
-        std::shared_ptr<T> sharedEntity = std::shared_ptr<T>( e );
-        
-        setupEntity(sharedEntity);
-        return sharedEntity;
+        setupEntity(e);
+        return e;
     }
 
-    template<typename T, typename... Args>
-    ScopedEntity<T> createScopedEntity(Args&&... args){
-        return ScopedEntity<T>( createEntity<T>( std::forward<Args>( args ) ...  ) );
-    }
-
-    
     template<typename T, typename... TArgs>
     std::shared_ptr<T> createSystem(TArgs&&... _Args) {
 
@@ -111,11 +96,11 @@ public:
     }
     
     template <class ...Args>
-    std::vector<std::shared_ptr<Entity>> getEntitiesWithComponents() const {
+    std::vector<Entity*> getEntitiesWithComponents() const {
         
         std::bitset<MaxComponents> bitsetMask;
         setBitset( &bitsetMask, getComponentTypeID<Args>()... );
-        std::vector<std::shared_ptr<Entity>> entities;
+        std::vector<Entity*> entities;
         for( auto &e : mEntities ){
             
             if(auto shared = e ){
@@ -158,9 +143,7 @@ protected:
         entitiesCreated += 1;
 
         mEntities.push_back( e );
-    
-        printf("created entity: %u, %u\n", entitiesCreated, e->getId() );
-    
+        
         e->mManager = this;
         e->mComponentPool = &mComponents;
     

@@ -17,6 +17,7 @@ namespace ecs{
     public:
         
         System(){ }
+        virtual ~System(){ }
         
         virtual void setup() {  }
 
@@ -28,7 +29,7 @@ namespace ecs{
         void setDrawable( bool v ){ drawable = v; }
 
         bool isUpdatable() { return updatable; }
-        bool setDrawable() { return updatable; }
+        bool isDrawable() { return drawable; }
 
         Manager* getManager() {  return mManager; }
         

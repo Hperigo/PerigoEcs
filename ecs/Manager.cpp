@@ -110,39 +110,41 @@ void Manager::entityDeleter(ecs::EntityRef e){
     for( auto& components : mComponents.mComponents ){
 
         if( components ){
-            components->remove(e.get());
+            components->remove(e);
         }
     }
     
-    e.reset();
-
+    printf("removed entity: %s\n", e->getName().c_str());
+    delete e;
+//    e = nullptr;
 }
 
 // prints a csv with the components in a row, and entities as collumns
 void Manager::printCheck(){
     // print entities id's
-//    cout << "enti,";
-//    for( int i = 0; i < mEntities.size(); i++){
-//
-//        if( mEntities[i] == nullptr ){
-//            cout << "*" << "," ;
-//        }else{
-//            cout << i << ",";
-//        }
-//    }
-//    cout << endl;
-//
-//    // print valid components
-//    for( int i = 0; i < 10; i++){
-//        cout << "id: " << i << ",";
-//
-//        for( int j = 0; j < mComponents[i].size(); j++){
-//            auto c = mEntityPool.mComponents[i][j];
-//            bool valid = c != nullptr;
-//            cout << valid << ",";
-//        }
-//        cout << "_" << endl;
-//    }
-//}
+    
+#if 0
+    cout << "enti,";
+    for( int i = 0; i < mEntities.size(); i++){
 
+        if( mEntities[i] == nullptr ){
+            cout << "*" << "," ;
+        }else{
+            cout << i << ",";
+        }
+    }
+    cout << endl;
+
+    // print valid components
+    for( int i = 0; i < 10; i++){
+        cout << "id: " << i << ",";
+
+        for( int j = 0; j < mComponents[i].size(); j++){
+            auto c = mEntityPool.mComponents[i][j];
+            bool valid = c != nullptr;
+            cout << valid << ",";
+        }
+        cout << "_" << endl;
+    }
+#endif
 }

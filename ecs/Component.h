@@ -135,7 +135,7 @@ namespace ecs{
         
         template<typename... Args>
         T* create(Entity* e, Args&&... args){
-            int index = data.size();
+            unsigned long index = data.size();
             entityKeys[e] = index;
             data.emplace_back( std::forward<Args>(args)... );
 

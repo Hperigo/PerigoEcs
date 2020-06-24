@@ -21,8 +21,8 @@ namespace ecs{
     class Manager;
     class System;
 
-    using EntityRef = std::shared_ptr<Entity>;
-    using EntityWeakRef = std::weak_ptr<Entity>;
+    using EntityRef = Entity*;
+//    using EntityWeakRef = std::weak_ptr<Entity>;
     
     class Entity {
 
@@ -133,30 +133,6 @@ namespace ecs{
         
         //use this to initialize components in the entity constructor
         std::function<void()> onLateSetup;
-    };
-    
-
-    // Holds a EntityRef and destroys it when this object leaves it's scope
-    template <typename T>
-    class ScopedEntity {
-    public:
-        ScopedEntity( EntityRef e ) : entity( e )
-        { }
-        
-        ~ScopedEntity(){
-            entity->destroy();
-        }
-        
-        T* operator ->(){
-            return (T*)( entity.get() );
-        }
-        
-        EntityRef getPtr(){
-            return entity;
-        }
-        
-    private:
-        EntityRef entity;
     };
 }
 
