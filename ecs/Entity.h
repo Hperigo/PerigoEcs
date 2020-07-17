@@ -33,11 +33,8 @@ namespace ecs{
 
         bool isAlive() const { return mIsAlive; }
         virtual void destroy();
+        virtual void drawUi(){};
 
-        virtual void setup() { }
-        virtual void drawUi() { };
-
-        
         std::string getName(){ return mName; }
         void setName(const std::string& name ){ mName = name; }
         
@@ -57,7 +54,7 @@ namespace ecs{
         template <class T>
         T* addComponent(){
             
-            assert(!hasComponent<T>());
+            assert(!hasComponent<T>() && "entity already has that component!");
             
             mComponentBitset[ getComponentTypeID<T>() ] = true;
             std::shared_ptr<ComponentContainer<T>> container = mComponentPool->getContainer<T>();
@@ -88,20 +85,16 @@ namespace ecs{
         
         template <class T>
         T* getComponent(){
-        
-            assert(hasComponent<T>());
+            assert(hasComponent<T>() && "entity does not have that component!");
             auto container = mComponentPool->getContainer<T>();
             return container->get( this );
         }
 
         template <class T>
         void removeComponent(){
-            
-            assert(hasComponent<T>());
-            
+            assert(hasComponent<T>() && "Entity does not have that component");
             std::shared_ptr<ComponentContainer<T>> container = mComponentPool->getContainer<T>();
             mComponentBitset[ getComponentTypeID<T>() ] = false;
-
             container->remove( this );
         }
         
@@ -114,10 +107,7 @@ namespace ecs{
         
     protected:
         
-        const char* name;
-        
         void setupComponent(void* input);
-        
         void markRefresh();
 
         Manager* mManager;

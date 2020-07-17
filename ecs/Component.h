@@ -159,7 +159,8 @@ namespace ecs{
         std::vector<T> data;
         std::unordered_map< Entity* , size_t> entityKeys;
     };
-
+    
+    //a pool containing all components in our ecs.
     struct ComponentPool {
         std::array< ComponentContainerBaseRef, MaxComponents> mComponents;
         

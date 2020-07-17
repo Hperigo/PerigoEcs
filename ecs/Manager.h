@@ -22,10 +22,7 @@ namespace  ecs{
 class Manager {
 
 public:
-    Manager(){
-        printf("manager\n");
-    }
-    
+    Manager(){}
     ~Manager(){ }
 
     template<typename... Args>
@@ -35,6 +32,7 @@ public:
 
     Entity* createEntity(){
         Entity* e = new ecs::Entity();
+        setupEntity(e);
         return e;
     }
     
@@ -128,7 +126,8 @@ protected:
     
     //  ---- general manager vars -------
     std::vector<SystemRef> mSystems;
-    std::vector< EntityRef > mEntities;
+    std::vector< Entity* > mEntities;
+
     ComponentPool mComponents;
     
     bool needsRefresh{false};
@@ -137,7 +136,7 @@ protected:
     unsigned int entitiesCreated = 0;
     
     // setup entity after it's creation
-    void setupEntity(const EntityRef& e ){
+    void setupEntity(Entity* e){
     
         e->mEntityId = entitiesCreated;
         entitiesCreated += 1;
@@ -147,13 +146,12 @@ protected:
         e->mManager = this;
         e->mComponentPool = &mComponents;
     
-        e->setup();
-    
         if( e->onLateSetup ){
             e->onLateSetup();
         }
     };
-    void entityDeleter( ecs::EntityRef e );
+    
+    void entityDeleter( ecs::Entity* e );
     friend class Entity;
 };
 }

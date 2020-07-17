@@ -10,24 +10,25 @@ auto mManager = ecs::Manager::create();
 struct Dummy : public ecs::Component {
     ~Dummy(){ 
     }
-
 	float value;
 };
 
 struct CustomEntity : public ecs::Entity{ 
 
-    void setup() override{
-	setName("custom");
+    CustomEntity(){
+        setOnLateSetupFn([&]{
+	        setName("custom");
+        });
     }
 
   ~CustomEntity(){ 
     }
 };
 
-
-
 TEST_CASE( "1: Manager tests" ) {
-   
+    
+    make_id( 0, 0 );
+
     SECTION( "resizing bigger changes size and capacity" ) {
         {
             ecs::EntityRef mEntity = mManager->createEntity();
@@ -192,6 +193,8 @@ TEST_CASE( "1: Manager tests" ) {
         }
     }
 
+
+#if 0
       SECTION( "Scoped Entities" ){
 
         {           
@@ -214,6 +217,7 @@ TEST_CASE( "1: Manager tests" ) {
         }
     
     }
+#endif
 }
 
 
@@ -223,10 +227,12 @@ TEST_CASE("Benchmarks"){
     BENCHMARK("Normal Entity") {
 		ecs::EntityRef mEntity = mManager->createEntity();
     };
-	
+
+#if 0	
 	BENCHMARK("Scoped Entity") {
        auto mEntity = mManager->createScopedEntity();
     };
+#endif
 
 	BENCHMARK("Add Component to Entity") {
        auto mEntity = mManager->createEntity<CustomEntity>();
