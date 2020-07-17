@@ -113,6 +113,8 @@ public:
     };
 
 
+    Entity* getEntity( EntityID eId );
+
     std::vector<EntityRef> getEntities() {
         return mEntities;
     }
@@ -127,6 +129,9 @@ protected:
     //  ---- general manager vars -------
     std::vector<SystemRef> mSystems;
     std::vector< Entity* > mEntities;
+    std::unordered_map<unsigned int, Entity*> mValidEntities;
+
+
 
     ComponentPool mComponents;
     
@@ -141,8 +146,10 @@ protected:
         e->mEntityId = entitiesCreated;
         entitiesCreated += 1;
 
-        mEntities.push_back( e );
-        
+        //
+        mValidEntities[e->mEntityId] = e;
+        mEntities.push_back( e );  
+
         e->mManager = this;
         e->mComponentPool = &mComponents;
     

@@ -23,11 +23,9 @@ namespace ecs{
 
     using EntityRef = Entity*;
 //    using EntityWeakRef = std::weak_ptr<Entity>;
-    
     class Entity {
 
     public:
-
         Entity() {  }
         virtual ~Entity(){ }
 
@@ -41,7 +39,7 @@ namespace ecs{
         unsigned int getId() {
             return mEntityId;
         }
-        
+
         template < typename T>
         bool hasComponent() const{
             return  hasComponentBitset( getComponentTypeID<T>() ) ;

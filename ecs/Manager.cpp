@@ -61,6 +61,11 @@ void Manager::draw(){
 }
 
 
+Entity* Manager::getEntity( ecs::EntityID eId ){
+    auto it = mValidEntities.find(eId);
+    return it != mValidEntities.end()  && it->second->isAlive() ? it->second : nullptr;
+}
+
 void Manager::entityDeleter(ecs::EntityRef e){
 
 
@@ -70,6 +75,8 @@ void Manager::entityDeleter(ecs::EntityRef e){
             components->remove(e);
         }
     }
+
+    mValidEntities.erase( e->mEntityId );
     delete e;
 //    e = nullptr;
 }

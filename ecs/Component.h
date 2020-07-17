@@ -58,14 +58,12 @@ namespace ecs{
         virtual bool drawUi() { return false; };
         virtual void onDestroy(){ };
 
-        Entity* getEntity(){ return mEntity; }
-        Entity* getEntity() const { return mEntity; }
+        Entity* getEntity();
         Manager* getManager(){ return mManager; }
 
     protected:
             
-        Entity* mEntity;
-        uint64_t mEntityId;
+        EntityID  mEntityId;
         Manager* mManager;
     
         std::size_t mComponentId;
@@ -85,7 +83,7 @@ namespace ecs{
     public:
         virtual ~ComponentContainerBase(){ };
         virtual void remove( Entity* e ) = 0;
-
+        virtual void onEntityDestroy( Entity* e ) = 0;
 //       we might not need theese
 //        virtual Component* get( Entity* e ) = 0;
 //        virtual Component* create(Entity* e) = 0;
@@ -103,6 +101,24 @@ namespace ecs{
             return &data[index];
         }
         
+        void onEntityDestroy( Entity* e ) override {
+            
+            
+            auto it = entityKeys.find(e);
+            if( it == entityKeys.end() ){
+                return;
+            }
+
+            //TODO: we can make this constexpr
+             if( std::is_base_of<Component, T>::value == true ){
+                
+                T* typePointer = &data[it->second];
+                Component* component = (Component*) typePointer;
+                component->onDestroy();
+            }
+
+        }
+
         void remove( Entity* e ) override {
 
             if( data.size() == 0 ){
@@ -114,13 +130,6 @@ namespace ecs{
                 return;
             }
         
-            //TODO: we can make this constexpr
-             if( std::is_base_of<Component, T>::value == true ){
-                
-                T* typePointer = &data[it->second];
-                Component* component = (Component*) typePointer;
-                component->onDestroy();
-            }
 
             for( auto& k : entityKeys ){
                 

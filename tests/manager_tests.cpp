@@ -13,6 +13,17 @@ struct Dummy : public ecs::Component {
 	float value;
 };
 
+bool onDestroyCalled = false;
+struct OnDestroyTest : public ecs::Component {
+    ~OnDestroyTest(){ 
+    }
+	
+
+    void onDestroy() override{
+        onDestroyCalled = true;
+    }
+};
+
 struct CustomEntity : public ecs::Entity{ 
 
     CustomEntity(){
@@ -27,8 +38,6 @@ struct CustomEntity : public ecs::Entity{
 
 TEST_CASE( "1: Manager tests" ) {
     
-    make_id( 0, 0 );
-
     SECTION( "resizing bigger changes size and capacity" ) {
         {
             ecs::EntityRef mEntity = mManager->createEntity();
@@ -78,7 +87,23 @@ TEST_CASE( "1: Manager tests" ) {
 
 }
 
-    TEST_CASE( "Add and remove components" ) {
+    TEST_CASE( "Components" ) {
+
+       SECTION( "Getting entity from component" ){
+            ecs::EntityRef mEntity = mManager->createEntity();
+            OnDestroyTest* d = mEntity->addComponent<OnDestroyTest>();
+            auto e = d->getEntity();
+
+            REQUIRE( e == mEntity );
+            e->destroy();
+
+            REQUIRE(onDestroyCalled == true);
+
+            auto nullEntity = d->getEntity();
+            REQUIRE( nullEntity == nullptr );
+       }
+
+        mManager->update();
 
         SECTION( "destroy component when entity is destroyed" ){
             {
@@ -193,31 +218,6 @@ TEST_CASE( "1: Manager tests" ) {
         }
     }
 
-
-#if 0
-      SECTION( "Scoped Entities" ){
-
-        {           
-            auto mEntity = mManager->createScopedEntity<CustomEntity>();
-            mEntity->addComponent<std::string>( "string!" );
-
-            REQUIRE( mEntity->hasComponent<std::string>() == true );
-
-            REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 1 );
-
-            mEntity->removeComponent<std::string>();
-            REQUIRE( mEntity->hasComponent<std::string>() == false ); 
-        }
-
-        {
-            auto strings = mManager->getComponentsArray<std::string>();
-            REQUIRE( strings->size() == 0 );
-
-            REQUIRE( mManager->getEntitiesWithComponents<std::string>().size() == 0 );
-        }
-    
-    }
-#endif
 }
 
 
@@ -228,20 +228,15 @@ TEST_CASE("Benchmarks"){
 		ecs::EntityRef mEntity = mManager->createEntity();
     };
 
-#if 0	
-	BENCHMARK("Scoped Entity") {
-       auto mEntity = mManager->createScopedEntity();
-    };
-#endif
-
 	BENCHMARK("Add Component to Entity") {
        auto mEntity = mManager->createEntity<CustomEntity>();
 	   mEntity->addComponent<Dummy>();
     };
 
-	BENCHMARK("Remove Component to Entity") {
-       auto mEntity = mManager->createEntity<CustomEntity>();
-       mEntity->addComponent<Dummy>();
-       mEntity->removeComponent<Dummy>();
+    
+	BENCHMARK("Create Entity, add and remove Component to Entity") {
+        auto mEntity = mManager->createEntity<CustomEntity>();
+        mEntity->addComponent<Dummy>();
+        mEntity->removeComponent<Dummy>();
     };
 }

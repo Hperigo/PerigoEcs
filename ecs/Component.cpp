@@ -1,5 +1,6 @@
 #include "Component.h"
 #include "Entity.h"
+#include "Manager.h"
 
 namespace ecs {
     
@@ -16,8 +17,11 @@ namespace ecs {
         }
         
     }
-    
-    
+
     Component::~Component(){}
+
+    Entity* Component::getEntity(){
+        return mManager->getEntity( mEntityId );
+    }
 }
 

@@ -11,16 +11,20 @@ using namespace ecs;
 
 
 void Entity::setupComponent( void* input){
-
-//    mManager->addComponent(getId(), cId, component );
     
     Component* component = (Component*) input;
-    component->mEntity = this;
+    component->mEntityId = mEntityId;
     component->mManager = mManager;
+
 }
 
 void Entity::destroy(){
     mIsAlive = false;
+    for( size_t i = 0; i < internal::getLastID(); i++ ){
+        if(mComponentBitset[i] == true) {
+            mComponentPool->mComponents[i]->onEntityDestroy( this );
+        }
+    }
     markRefresh();
 }
 
